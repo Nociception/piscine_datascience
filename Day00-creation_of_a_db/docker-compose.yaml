@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_piscineds
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nstoutze
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: piscineds
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+    driver: local
+
+# docker-compose up -d
+# docker run -it --rm --network="host" postgres:latest psql -U nstoutze -d piscineds -h localhost -W
