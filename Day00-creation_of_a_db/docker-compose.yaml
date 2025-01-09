@@ -19,3 +19,4 @@ volumes:
 
 # docker-compose up -d
 # docker run -it --rm --network="host" postgres:latest psql -U nstoutze -d piscineds -h localhost -W
+# docker-compose down --volumes                                           
