@@ -12,6 +12,13 @@ services:
       POSTGRES_DB: piscineds
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8080:8080"
+
 
 volumes:
   postgres_data:
@@ -19,4 +26,4 @@ volumes:
 
 # docker-compose up -d
 # docker run -it --rm --network="host" postgres:latest psql -U nstoutze -d piscineds -h localhost -W
-# docker-compose down --volumes                                           
+# docker-compose down --volumes
