@@ -7,45 +7,39 @@ URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
 
-
 .PHONY: up psql down ex00 ex01-setup ex01-clean download unzip env
 
+up:
+	docker-compose -f $(COMPOSE_FILE) up -d
 
 env:
 	@if [ -f .env ]; then \
 		echo ".env file already exists. Skipping creation."; \
 	else \
-		echo "crating .env file..."; \
-		cat << EOF >.env; \
-POSTGRES_USER=nstoutze
-POSTGRES_PASSWORD=mysecretpassword
-POSTGRES_DB=piscineds
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-EOF
+		echo "Creating .env file..."; \
+		echo "POSTGRES_USER=nstoutze" > .env; \
+		echo "POSTGRES_PASSWORD=mysecretpassword" >> .env; \
+		echo "POSTGRES_DB=piscineds" >> .env; \
+		echo "POSTGRES_HOST=localhost" >> .env; \
+		echo "POSTGRES_PORT=5432" >> .env; \
 		echo ".env file created successfully."; \
 	fi
 
 
-up:
-	docker-compose -f $(COMPOSE_FILE) up -d
 
 
 psql:
 	$(DOCKER_RUN)
 
-
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 
-
 ex00: up psql down
-
 
 ex01-setup: up
 	@echo "Waiting for PostgreSQL to be ready..."
 	@for i in {1..10}; do \
-	    $(DOCKER_EXEC) psql -U nstoutze -d piscineds -c "SELECT 1" && break || sleep 2; \
+		$(DOCKER_EXEC) psql -U nstoutze -d piscineds -c "SELECT 1" && break || sleep 2; \
 	done
 #		Reminder : DOCKER_EXEC = docker exec -it postgres_piscineds
 #			It then starts a session inside the postgres docker container.
@@ -68,15 +62,15 @@ ex01-setup: up
 	@echo "Creating table $(EXAMPLE_TABLE_NAME)..."
 	$(DOCKER_EXEC) psql -U nstoutze -d piscineds -c "\
 	CREATE TABLE $(EXAMPLE_TABLE_NAME) ( \
-	    event_time TIMESTAMP NOT NULL, \
-	    event_type VARCHAR(50), \
-	    product_id BIGINT, \
-	    category_id NUMERIC, \
-	    category_code VARCHAR(255), \
-	    brand VARCHAR(255), \
-	    price NUMERIC(10, 2), \
-	    user_id BIGINT, \
-	    user_session VARCHAR(255) \
+		event_time TIMESTAMP NOT NULL, \
+		event_type VARCHAR(50), \
+		product_id BIGINT, \
+		category_id NUMERIC, \
+		category_code VARCHAR(255), \
+		brand VARCHAR(255), \
+		price NUMERIC(10, 2), \
+		user_id BIGINT, \
+		user_session VARCHAR(255) \
 	);"
 
 	@echo "Inserting data into $(EXAMPLE_TABLE_NAME)..."
@@ -99,15 +93,13 @@ ex01-setup: up
 	@echo "   - Password: mysecretpassword"
 	@echo "   - Database: piscineds"
 
-
 ex01-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
 	$(DOCKER_EXEC) psql -U nstoutze -d piscineds -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
-
 download:
 	@if [ -f $(OUTPUT_ZIP) ]; then \
-		echo "$(OUTPUT_ZIP) already exists. Skipping downlad."; \
+		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
 	else \
 		echo "Downloading $(OUTPUT_ZIP) from $(URL)..."; \
 		curl -o $(OUTPUT_ZIP) -L $(URL); \
@@ -115,8 +107,7 @@ download:
 	fi
 #	-f in a if [ -f ] checks a file presence
 #	-o specifies an output file name
-#	-L makes curls follow the potential (and frequent) URL chain, in order to reach the targeted file.
-
+#	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
 
 unzip:
 	@if [ -d $(SUBJECT_DIRNAME) ]; then \
@@ -126,6 +117,6 @@ unzip:
 		unzip -o $(OUTPUT_ZIP); \
 		echo "Extraction complete: files are in $(SUBJECT_DIRNAME)/"; \
 	else \
-		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first"; \
+		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
 #	-d in a if [ -d ] checks a directory presence

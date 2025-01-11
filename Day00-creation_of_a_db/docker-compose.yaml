@@ -5,11 +5,11 @@ services:
     image: postgres:latest # Contains the psql client/interface, which we will use later.
     container_name: postgres_piscineds
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     environment:
-      POSTGRES_USER: nstoutze
-      POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: piscineds
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
   
@@ -18,7 +18,6 @@ services:
     container_name: adminer
     ports:
       - "8080:8080"
-
 
 volumes:
   postgres_data:
