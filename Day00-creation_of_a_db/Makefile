@@ -24,9 +24,7 @@ env:
 		echo "POSTGRES_PORT=5432" >> .env; \
 		echo ".env file created successfully."; \
 	fi
-
-
-
+# Unable to make the makefile work with a heredoc.
 
 psql:
 	$(DOCKER_RUN)
@@ -35,6 +33,7 @@ down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 
 ex00: up psql down
+
 
 ex01-setup: up
 	@echo "Waiting for PostgreSQL to be ready..."
@@ -97,6 +96,7 @@ ex01-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
 	$(DOCKER_EXEC) psql -U nstoutze -d piscineds -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
+
 download:
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
@@ -120,3 +120,4 @@ unzip:
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
 #	-d in a if [ -d ] checks a directory presence
+
