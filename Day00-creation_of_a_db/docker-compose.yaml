@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:latest # Contains the psql client/interface, which we will use later.
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: postgres_piscineds
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
