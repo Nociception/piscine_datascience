@@ -7,6 +7,11 @@ URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
 
+SQL_FILE = ex02/table.sql
+CSV_FILE = subject/customer/data_2022_dec.csv
+CSV_CONTAINER_PATH = /data_2022_dec.csv
+
+
 
 
 .PHONY: up psql down ex00 ex01-setup ex01-clean download unzip env withoutpw
@@ -130,6 +135,25 @@ unzip:
 	else \
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
+
+import_data:
+	@if [ -f $(SQL_FILE) ] && [ -f $(CSV_FILE) ]; then \
+		echo "Copying SQL file to container..."; \
+		docker cp $(SQL_FILE) postgres_piscineds:/create_and_import.sql; \
+		echo "Copying CSV file to container..."; \
+		docker cp $(CSV_FILE) postgres_piscineds:$(CSV_CONTAINER_PATH); \
+		echo "Fixing ownership of the CSV file in the container..."; \
+		docker exec -it postgres_piscineds chown postgres:postgres $(CSV_CONTAINER_PATH); \
+		echo "Executing SQL file to create table and import data..."; \
+		docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -f /create_and_import.sql; \
+		echo "Table created and data imported successfully!"; \
+	else \
+		echo "Error: $(SQL_FILE) or $(CSV_FILE) not found."; \
+	fi
+
+verify_data:
+	docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -c "SELECT COUNT(*) FROM data_2022_dec;"
+
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
