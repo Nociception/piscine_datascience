@@ -15,9 +15,19 @@ up:
 	docker-compose -f $(COMPOSE_FILE) up -d
 
 
+adminer:
+	@echo "\nTo use Adminer, follow these steps:"
+	@echo "1. Open your browser and go to: http://localhost:8080"
+	@echo "2. Fill in the following connection details:"
+	@echo "   - System: PostgreSQL"
+	@echo "   - Server: postgres"
+	@echo "   - Username: nstoutze"
+	@echo "   - Password: mysecretpassword"
+	@echo "   - Database: piscineds"
+
 withoutpw:
 	docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
-# Check the pg_hba.conf file to know what method is used to authenticate during a db connection:
+# Checks the pg_hba.conf file to know what method is used to authenticate during a db connection:
 # docker exec -it postgres_piscineds sh
 #	cat /var/lib/postgresql/data/pg_hba.conf
 
@@ -93,14 +103,7 @@ ex01-setup: up
 	('2022-10-01 00:00:16', 'cart', 5857269, 1487580005134238464, NULL, 'runail', 2.62, 430174032, '73dea1e7-664e-43f4-8b30-d32b9d5af04f');"
 	@echo "Table $(EXAMPLE_TABLE_NAME) created and populated successfully!"
 
-	@echo "\nTo use Adminer, follow these steps:"
-	@echo "1. Open your browser and go to: http://localhost:8080"
-	@echo "2. Fill in the following connection details:"
-	@echo "   - System: PostgreSQL"
-	@echo "   - Server: postgres"
-	@echo "   - Username: nstoutze"
-	@echo "   - Password: mysecretpassword"
-	@echo "   - Database: piscineds"
+	@$(MAKE) adminer
 
 ex01-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
