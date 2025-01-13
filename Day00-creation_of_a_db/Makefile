@@ -7,10 +7,20 @@ URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
 
-.PHONY: up psql down ex00 ex01-setup ex01-clean download unzip env
+
+
+.PHONY: up psql down ex00 ex01-setup ex01-clean download unzip env withoutpw
 
 up:
 	docker-compose -f $(COMPOSE_FILE) up -d
+
+
+withoutpw:
+	docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
+# Check the pg_hba.conf file to know what method is used to authenticate during a db connection:
+# docker exec -it postgres_piscineds sh
+#	cat /var/lib/postgresql/data/pg_hba.conf
+
 
 env:
 	@if [ -f .env ]; then \
@@ -105,8 +115,6 @@ download:
 		curl -o $(OUTPUT_ZIP) -L $(URL); \
 		echo "Download complete: $(OUTPUT_ZIP)"; \
 	fi
-#	-f in a if [ -f ] checks a file presence
-#	-o specifies an output file name
 #	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
 
 unzip:
@@ -119,5 +127,4 @@ unzip:
 	else \
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
-#	-d in a if [ -d ] checks a directory presence
 
