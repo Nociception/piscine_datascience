@@ -4,6 +4,8 @@ services:
   postgres:
     build:
       context: .
+      # Allows the build process to find any file involved in a COPY,
+      # or similar commands.
       dockerfile: Dockerfile
     container_name: postgres_piscineds
     ports:
