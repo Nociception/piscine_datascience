@@ -14,11 +14,48 @@ CSV_CONTAINER_PATH = /data_2022_dec.csv
 
 
 
-.PHONY: up psql down ex00 ex01-setup ex01-clean download unzip env withoutpw
+.PHONY: up psql down env withoutpw\
+		ex00 \
+		ex01-setup ex01-clean \
+		download unzip ex02-import_data ex02-verify_data ex02-clean \
+		ex03 \
+		ex04
 
-up:
+
+up: unzip
 	docker-compose -f $(COMPOSE_FILE) up -d
 
+container:
+	$(DOCKER_EXEC) bash
+
+download:
+	@if [ -f $(OUTPUT_ZIP) ]; then \
+		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
+	else \
+		echo "Downloading $(OUTPUT_ZIP) from $(URL)..."; \
+		curl -o $(OUTPUT_ZIP) -L $(URL); \
+		echo "Download complete: $(OUTPUT_ZIP)"; \
+	fi
+#	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
+
+unzip: download
+	@if [ -d $(SUBJECT_DIRNAME) ]; then \
+		echo "Directory $(SUBJECT_DIRNAME) already exists. Skipping extraction."; \
+	elif [ -f $(OUTPUT_ZIP) ]; then \
+		echo "Extracting $(OUTPUT_ZIP)..."; \
+		unzip -o $(OUTPUT_ZIP); \
+		echo "Extraction complete: files are in $(SUBJECT_DIRNAME)/"; \
+	else \
+		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
+	fi
+
+	@if [ -f $(OUTPUT_ZIP) ]; then \
+		rm $(OUTPUT_ZIP); \
+		echo "subject.zip file deleted."; \
+	fi
+
+fclean:
+	rm -rf subject
 
 adminer:
 	@echo "\nTo use Adminer, follow these steps:"
@@ -47,6 +84,7 @@ env:
 		echo "POSTGRES_DB=piscineds" >> .env; \
 		echo "POSTGRES_HOST=localhost" >> .env; \
 		echo "POSTGRES_PORT=5432" >> .env; \
+		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
 		echo ".env file created successfully."; \
 	fi
 # Unable to make the makefile work with a heredoc.
@@ -56,6 +94,8 @@ psql:
 
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
+	docker volume rm $(docker volume ls -q)
+
 
 ex00: up psql down
 
@@ -114,42 +154,17 @@ ex01-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
 	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
-
-download:
-	@if [ -f $(OUTPUT_ZIP) ]; then \
-		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
-	else \
-		echo "Downloading $(OUTPUT_ZIP) from $(URL)..."; \
-		curl -o $(OUTPUT_ZIP) -L $(URL); \
-		echo "Download complete: $(OUTPUT_ZIP)"; \
-	fi
-#	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
-
-unzip:
-	@if [ -d $(SUBJECT_DIRNAME) ]; then \
-		echo "Directory $(SUBJECT_DIRNAME) already exists. Skipping extraction."; \
-	elif [ -f $(OUTPUT_ZIP) ]; then \
-		echo "Extracting $(OUTPUT_ZIP)..."; \
-		unzip -o $(OUTPUT_ZIP); \
-		echo "Extraction complete: files are in $(SUBJECT_DIRNAME)/"; \
-	else \
-		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
-	fi
-
 ex02-import_data:
-	@if [ -f $(SQL_FILE) ] && [ -f $(CSV_FILE) ]; then \
+	@if [ -f $(SQL_FILE) ]; then \
 		echo "Copying SQL file to container..."; \
 		docker cp $(SQL_FILE) postgres_piscineds:/create_and_import.sql; \
-		echo "Copying CSV file to container..."; \
-		docker cp $(CSV_FILE) postgres_piscineds:$(CSV_CONTAINER_PATH); \
-		echo "Fixing ownership of the CSV file in the container..."; \
-		$(DOCKER_EXEC) chown postgres:postgres $(CSV_CONTAINER_PATH); \
 		echo "Executing SQL file to create table and import data..."; \
 		$(DOCKER_EXEC) psql -U nstoutze -d piscineds -f /create_and_import.sql; \
 		echo "Table created and data imported successfully!"; \
 	else \
-		echo "Error: $(SQL_FILE) or $(CSV_FILE) not found."; \
+		echo "Error: $(SQL_FILE) not found."; \
 	fi
+
 # -f is a psql option for running .sql files
 
 ex02-verify_data:
@@ -159,8 +174,17 @@ ex02-verify_data:
 
 ex02-clean:
 	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS data_2022_dec;"
+	@$(DOCKER_EXEC) rm -f \
+		create_and_import.sql \
+		data_2022_dec.csv \
+		|| echo "Files already removed or not found."
 
 
+ex03:
+	cd ex03 ; python3 automatic_table.py
+
+ex04:
+	ls
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)

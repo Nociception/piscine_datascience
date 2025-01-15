@@ -7,7 +7,7 @@ services:
       # Allows the build process to find any file involved in a COPY,
       # or similar commands.
       dockerfile: Dockerfile
-    container_name: postgres_piscineds
+    container_name: ${POSTGRES_CONTAINER_NAME}
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     environment:
@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./subject:/data
   
   adminer:
     image: adminer:latest
