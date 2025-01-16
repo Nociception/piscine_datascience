@@ -7,6 +7,8 @@ OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
 URL_FEB_CSV = https://cdn.intra.42.fr/document/document/28095/data_2023_feb.csv
 FEB_CSV = data_2023_feb.csv
+EX01_PYTHON_FILE = customers_table.py
+EX02_PYTHON_FILE = remove_duplicates.py
 
 
 .PHONY: up psql down env withoutpw download unzip \
@@ -149,10 +151,18 @@ ex00-clean:
 	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
 
+# EX01_STATUS = 0
 ex01: unzip
-	cd ex01 ; python3 customers_table.py
+	cd ex01 ; python3 $(EX01_PYTHON_FILE)
+#	EX01_STATUS = 1
 
 
+ex02: unzip
+#	if EX01_STATUS
+	cd ex02 ; python3 $(EX02_PYTHON_FILE)
+
+ex02-clean: unzip
+	ls
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
