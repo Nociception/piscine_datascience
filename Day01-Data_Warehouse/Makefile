@@ -45,7 +45,7 @@ download:
 		echo "Download complete: $(OUTPUT_ZIP)"; \
 	fi
 
-	@if [ -f $(FEB_CSV) ]; then \
+	@if [ -f $(FEB_CSV) ] || [ -f $(SUBJECT_DIRNAME)/customer/$(FEB_CSV) ]; then \
 		echo "$(FEB_CSV) already exists. Skipping download."; \
 	else \
 		echo "Downloading $(FEB_CSV) from $(URL_FEB_CSV)..."; \
@@ -63,6 +63,13 @@ unzip: download
 		echo "Extraction complete: files are in $(SUBJECT_DIRNAME)/"; \
 	else \
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
+	fi
+
+	@if [ -f $(FEB_CSV) ]; then \
+		mv $(FEB_CSV) $(SUBJECT_DIRNAME)/customer/ ; \
+		echo "$(FEB_CSV) properly moved with the other .csv files into $(SUBJECT_DIRNAME)/customer/" ; \
+	else \
+		echo "$(FEB_CSV) does not exist. You must download it for the exercises"; \
 	fi
 
 fclean:
@@ -139,7 +146,8 @@ ex00-clean:
 	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
 
-ex01:
+ex01: unzip
+	ls
 
 
 
