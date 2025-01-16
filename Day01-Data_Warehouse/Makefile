@@ -28,7 +28,8 @@ container:
 	$(DOCKER_EXEC) bash
 
 psql:
-	$(DOCKER_RUN)
+	docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
+
 
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
@@ -68,6 +69,8 @@ unzip: download
 	@if [ -f $(FEB_CSV) ]; then \
 		mv $(FEB_CSV) $(SUBJECT_DIRNAME)/customer/ ; \
 		echo "$(FEB_CSV) properly moved with the other .csv files into $(SUBJECT_DIRNAME)/customer/" ; \
+	elif [ -f $(SUBJECT_DIRNAME)/customer/$(FEB_CSV) ]; then \
+		echo "$(FEB_CSV) is already in $(SUBJECT_DIRNAME)/customer"; \
 	else \
 		echo "$(FEB_CSV) does not exist. You must download it for the exercises"; \
 	fi
@@ -147,7 +150,7 @@ ex00-clean:
 
 
 ex01: unzip
-	ls
+	cd ex01 ; python3 customers_table.py
 
 
 
