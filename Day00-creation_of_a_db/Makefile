@@ -24,6 +24,11 @@ CSV_CONTAINER_PATH = /data_2022_dec.csv
 
 up: unzip
 	docker-compose -f $(COMPOSE_FILE) up -d
+	$(MAKE) docker_checks
+
+docker_checks:
+	docker ps
+	docker volume ls
 
 container:
 	$(DOCKER_EXEC) bash
@@ -33,6 +38,8 @@ psql:
 
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
+	$(MAKE) docker_checks
+
 #	docker volume rm $(docker volume ls -q)
 
 download:
