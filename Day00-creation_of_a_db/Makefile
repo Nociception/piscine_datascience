@@ -28,6 +28,13 @@ up: unzip
 container:
 	$(DOCKER_EXEC) bash
 
+psql:
+	$(DOCKER_RUN)
+
+down:
+	docker-compose -f $(COMPOSE_FILE) down --volumes
+#	docker volume rm $(docker volume ls -q)
+
 download:
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
@@ -47,11 +54,6 @@ unzip: download
 		echo "Extraction complete: files are in $(SUBJECT_DIRNAME)/"; \
 	else \
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
-	fi
-
-	@if [ -f $(OUTPUT_ZIP) ]; then \
-		rm $(OUTPUT_ZIP); \
-		echo "subject.zip file deleted."; \
 	fi
 
 fclean:
@@ -88,13 +90,6 @@ env:
 		echo ".env file created successfully."; \
 	fi
 # Unable to make the makefile work with a heredoc.
-
-psql:
-	$(DOCKER_RUN)
-
-down:
-	docker-compose -f $(COMPOSE_FILE) down --volumes
-	docker volume rm $(docker volume ls -q)
 
 
 ex00: up psql down
