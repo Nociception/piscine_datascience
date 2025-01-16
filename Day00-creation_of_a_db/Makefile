@@ -179,7 +179,7 @@ ex03:
 	cd ex03 ; python3 automatic_table.py
 
 ex04:
-	ls
+	cd ex04 ; python3 items_table.py
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
