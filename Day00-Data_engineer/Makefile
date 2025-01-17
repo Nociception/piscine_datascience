@@ -14,9 +14,9 @@ SQL_FILE = ex02/table.sql
 CSV_FILE = subject/customer/data_2022_dec.csv
 CSV_CONTAINER_PATH = /data_2022_dec.csv
 
-EX03_PYTHON_FILE_NAME = automatic_table.py
+EX03_PYTHON_FILE = automatic_table.py
 
-EX04_PYTHON_FILE_NAME = items_table.py
+EX04_PYTHON_FILE = items_table.py
 
 
 .PHONY: up psql down env withoutpw manage_app_directory end fclean\
@@ -25,7 +25,7 @@ EX04_PYTHON_FILE_NAME = items_table.py
 		ex01-setup ex01-clean \
 		download unzip ex02-import_data ex02-verify_data ex02-clean \
 		ex03 \
-		ex04
+		ex04 \
 
 
 up: unzip env
@@ -57,18 +57,18 @@ manage_app_directory:
 		mkdir app ; \
 	fi
 
-	@if [ -f $(APP_DIR_NAME)/$(EX03_PYTHON_FILE_NAME) ]; then \
-		echo "$(EX03_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy."; \
+	@if [ -f $(APP_DIR_NAME)/$(EX03_PYTHON_FILE) ]; then \
+		echo "$(EX03_PYTHON_FILE) already in $(APP_DIR_NAME); skipping copy."; \
 	else \
-		cp ex03/$(EX03_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
-		echo "ex03/$(EX03_PYTHON_FILE_NAME) copied into the $(APP_DIR_NAME) directory."; \
+		cp ex03/$(EX03_PYTHON_FILE) $(APP_DIR_NAME)/ ; \
+		echo "ex03/$(EX03_PYTHON_FILE) copied into the $(APP_DIR_NAME) directory."; \
 	fi
 
-	@if [ -f $(APP_DIR_NAME)/$(EX04_PYTHON_FILE_NAME) ]; then \
-		echo "$(EX04_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy."; \
+	@if [ -f $(APP_DIR_NAME)/$(EX04_PYTHON_FILE) ]; then \
+		echo "$(EX04_PYTHON_FILE) already in $(APP_DIR_NAME); skipping copy."; \
 	else \
-		cp ex04/$(EX04_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
-		echo "ex04/$(EX04_PYTHON_FILE_NAME) copied into the $(APP_DIR_NAME) directory."; \
+		cp ex04/$(EX04_PYTHON_FILE) $(APP_DIR_NAME)/ ; \
+		echo "ex04/$(EX04_PYTHON_FILE) copied into the $(APP_DIR_NAME) directory."; \
 	fi
 
 	@if [ -f $(APP_DIR_NAME)/requirements.txt ]; then \
@@ -100,25 +100,25 @@ unzip: download
 	fi
 
 fclean:
-	@if [ -d subject ]; then \
-		rm -rf subject; \
-		echo "subject directory deleted."; \
+	@if [ -d $(SUBJECT_DIRNAME) ]; then \
+		rm -rf $(SUBJECT_DIRNAME); \
+		echo "$(SUBJECT_DIRNAME) directory deleted."; \
 	else \
-		echo "subject directory does not exist."; \
+		echo "$(SUBJECT_DIRNAME) directory does not exist."; \
 	fi
 
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		rm -rf $(OUTPUT_ZIP); \
 		echo "$(OUTPUT_ZIP) file deleted."; \
 	else \
-		echo "subject file does not exist."; \
+		echo "$(OUTPUT_ZIP) file does not exist."; \
 	fi
 
-	@if [ -d app ]; then \
-		rm -rf app; \
-		echo "app directory deleted."; \
+	@if [ -d $(APP_DIR_NAME) ]; then \
+		rm -rf $(APP_DIR_NAME); \
+		echo "$(APP_DIR_NAME) directory deleted."; \
 	else \
-		echo "app directory does not exist."; \
+		echo "$(APP_DIR_NAME) directory does not exist."; \
 	fi
 
 end: down fclean
@@ -242,10 +242,10 @@ ex02-clean: up
 
 
 ex03: up ex02-clean
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX03_PYTHON_FILE_NAME)
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX03_PYTHON_FILE)
 
 ex04: up
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX04_PYTHON_FILE_NAME)
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX04_PYTHON_FILE)
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)

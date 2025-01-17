@@ -1,18 +1,26 @@
 COMPOSE_FILE = docker-compose.yaml
+POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
 DOCKER_RUN = docker run -it --rm --network="host" postgres:latest psql -U nstoutze -d piscineds -h localhost -W
-DOCKER_EXEC = docker exec -it postgres_piscineds
+POSTGRES_CONTAINER_NAME = postgres_piscineds
+PYTHON_CONTAINER_NAME = python
+DOCKER_EXEC = docker exec -it
 PSQL_COMMAND = psql -U nstoutze -d piscineds -c
-URL_ZIP = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
+APP_DIR_NAME = app
+EXAMPLE_TABLE_NAME = example_table
+
+URL_ZIP = https://cdn.intra.42.fr/document/document/23499/subject.zip
 URL_FEB_CSV = https://cdn.intra.42.fr/document/document/28095/data_2023_feb.csv
 FEB_CSV = data_2023_feb.csv
 EX01_PYTHON_FILE = customers_table.py
+
 EX02_PYTHON_FILE = remove_duplicates.py
 
-.PHONY: up psql down env withoutpw download unzip \
-		ex00-setup ex00-clean \
-		ex01 \
+.PHONY: up psql down env withoutpw manage_app_directory end fclean\
+		docker_checks postgres_container python_container \
+		ex00 \
+		ex01-setup ex01-clean download unzip\
 		ex02 \
 		ex03 \
 
@@ -25,18 +33,49 @@ docker_checks:
 	docker ps
 	docker volume ls
 
-container:
-	$(DOCKER_EXEC) bash
+postgres_container:
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) bash
+
+python_container:
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) bash
 
 psql:
-	docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
+	$(POSTGRES_RUN)
 
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 	$(MAKE) docker_checks
 #	docker volume rm $(docker volume ls -q)
 
-download:
+manage_app_directory:
+	@if [ -d $(APP_DIR_NAME) ]; then \
+		echo "$(APP_DIR_NAME) already exists. Skipping creation."; \
+	else \
+		mkdir app ; \
+	fi
+
+	@if [ -f $(APP_DIR_NAME)/$(EX01_PYTHON_FILE) ]; then \
+		echo "$(EX01_PYTHON_FILE) already in $(APP_DIR_NAME); skipping copy."; \
+	else \
+		cp ex01/$(EX01_PYTHON_FILE) $(APP_DIR_NAME)/ ; \
+		echo "ex01/$(EX01_PYTHON_FILE) copied into the $(APP_DIR_NAME) directory."; \
+	fi
+
+	@if [ -f $(APP_DIR_NAME)/$(EX02_PYTHON_FILE) ]; then \
+		echo "$(EX02_PYTHON_FILE) already in $(APP_DIR_NAME); skipping copy."; \
+	else \
+		cp ex02/$(EX02_PYTHON_FILE) $(APP_DIR_NAME)/ ; \
+		echo "ex02/$(EX02_PYTHON_FILE) copied into the $(APP_DIR_NAME) directory."; \
+	fi
+
+	@if [ -f $(APP_DIR_NAME)/requirements.txt ]; then \
+		echo "requirements.txt already in $(APP_DIR_NAME); skipping copy."; \
+	else \
+		cp requirements.txt $(APP_DIR_NAME)/ ; \
+		echo "requirements.txt copied into the $(APP_DIR_NAME) directory."; \
+	fi
+
+download: manage_app_directory
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
 	else \
@@ -52,7 +91,6 @@ download:
 		curl -o $(FEB_CSV) -L $(URL_FEB_CSV); \
 		echo "Download complete: $(FEB_CSV)"; \
 	fi
-#	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
 
 unzip: download
 	@if [ -d $(SUBJECT_DIRNAME) ]; then \
@@ -75,7 +113,28 @@ unzip: download
 	fi
 
 fclean:
-	rm -rf subject
+	@if [ -d $(SUBJECT_DIRNAME) ]; then \
+		rm -rf $(SUBJECT_DIRNAME); \
+		echo "$(SUBJECT_DIRNAME) directory deleted."; \
+	else \
+		echo "$(SUBJECT_DIRNAME) directory does not exist."; \
+	fi
+
+	@if [ -f $(OUTPUT_ZIP) ]; then \
+		rm -rf $(OUTPUT_ZIP); \
+		echo "$(OUTPUT_ZIP) file deleted."; \
+	else \
+		echo "$(OUTPUT_ZIP) file does not exist."; \
+	fi
+
+	@if [ -d $(APP_DIR_NAME) ]; then \
+		rm -rf $(APP_DIR_NAME); \
+		echo "$(APP_DIR_NAME) directory deleted."; \
+	else \
+		echo "$(APP_DIR_NAME) directory does not exist."; \
+	fi
+
+end: down fclean
 
 adminer:
 	@echo "\nTo use Adminer, follow these steps:"
@@ -89,9 +148,6 @@ adminer:
 
 withoutpw:
 	$(DOCKER_EXEC) -U nstoutze -d piscineds -h localhost
-# Checks the pg_hba.conf file to know what method is used to authenticate during a db connection:
-# docker exec -it postgres_piscineds sh
-#	cat /var/lib/postgresql/data/pg_hba.conf
 
 env:
 	@if [ -f .env ]; then \
@@ -104,19 +160,19 @@ env:
 		echo "POSTGRES_HOST=localhost" >> .env; \
 		echo "POSTGRES_PORT=5432" >> .env; \
 		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
+		echo "PYTHON_CONTAINER_NAME=python" >> .env; \
 		echo ".env file created successfully."; \
 	fi
-# Unable to make the makefile work with a heredoc.
 
 
 ex00-setup: up
 	@echo "Waiting for PostgreSQL to be ready..."
 	@for i in {1..10}; do \
-		$(DOCKER_EXEC) $(PSQL_COMMAND) "SELECT 1" && break || sleep 2; \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "SELECT 1" && break || sleep 2; \
 	done
 
 	@echo "Creating table $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "\
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
 	CREATE TABLE $(EXAMPLE_TABLE_NAME) ( \
 		event_time TIMESTAMP NOT NULL, \
 		event_type VARCHAR(50), \
@@ -130,7 +186,7 @@ ex00-setup: up
 	);"
 
 	@echo "Inserting data into $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "\
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
 	INSERT INTO $(EXAMPLE_TABLE_NAME) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) VALUES \
 	('2022-10-01 00:00:00', 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
 	('2022-10-01 00:00:03', 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
@@ -144,15 +200,15 @@ ex00-setup: up
 
 ex00-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
 
-ex01: unzip
-	cd ex01 ; python3 $(EX01_PYTHON_FILE)
+ex01: unzip up ex00-clean
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX01_PYTHON_FILE)
 
 
-ex02: ex01
-	cd ex02 ; python3 $(EX02_PYTHON_FILE)
+ex02: up ex01
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
 
 #BIG CLEAN

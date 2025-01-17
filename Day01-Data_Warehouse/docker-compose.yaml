@@ -1,10 +1,11 @@
 services:
+
   postgres:
     build:
       context: .
       # Allows the build process to find any file involved in a COPY,
       # or similar commands.
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_postgres
     container_name: ${POSTGRES_CONTAINER_NAME}
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
@@ -14,12 +15,40 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./subject:/data
+    networks:
+      - network
   
   adminer:
     image: adminer:latest
     container_name: adminer
     ports:
       - "8080:8080"
+    networks:
+      - network
+
+  python:
+    build:
+      context: .
+      dockerfile: Dockerfile_python
+    container_name: python
+    volumes:
+      - ./subject:/data
+      - ./app:/app
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    networks:
+      - network
+    command: ["tail", "-f", "/dev/null"]
+
+
+networks:
+  network:
+    driver: bridge
+
 
 volumes:
   postgres_data:
