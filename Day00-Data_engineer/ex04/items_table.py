@@ -1,20 +1,11 @@
 import os
 import psycopg
-import dotenv
 from pathlib import Path
 
 
 def get_env_variables() -> dict[str, str]:
     """Returns the .env variables in a dictionary."""
 
-    dotenv_path = Path("../.env")
-    assert dotenv_path.exists(), (
-        f"ERROR: .env file not found at {dotenv_path.resolve()}"
-    )
-    print(f".env file found at {dotenv_path.resolve()}")
-
-    dotenv.load_dotenv(dotenv_path=dotenv_path)
-    print("Step: Loading environment variables.")
     env_variables = {
         "postgres_user": os.getenv("POSTGRES_USER"),
         "postgres_password": os.getenv("POSTGRES_PASSWORD"),
@@ -81,13 +72,12 @@ def main():
     creates tables based on CSV files.
     """
 
-    HOST_CSV_DIR = "../subject/item"
     CONTAINER_CSV_DIR = "/data/item"
 
     try:
         env_variables = get_env_variables()
 
-        csv_dir = Path(HOST_CSV_DIR).resolve()
+        csv_dir = Path(CONTAINER_CSV_DIR).resolve()
         assert csv_dir.exists(), (
             f"ERROR: CSV directory not found at {csv_dir}"
         )

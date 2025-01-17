@@ -1,6 +1,8 @@
 COMPOSE_FILE = docker-compose.yaml
-DOCKER_RUN = docker run -it --rm --network="host" postgres:latest psql -U nstoutze -d piscineds -h localhost -W
-DOCKER_EXEC = docker exec -it postgres_piscineds
+POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
+POSTGRES_CONTAINER_NAME = postgres_piscineds
+PYTHON_CONTAINER_NAME = python
+DOCKER_EXEC = docker exec -it
 PSQL_COMMAND = psql -U nstoutze -d piscineds -c
 EXAMPLE_TABLE_NAME = example_table
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
@@ -13,10 +15,12 @@ CSV_FILE = subject/customer/data_2022_dec.csv
 CSV_CONTAINER_PATH = /data_2022_dec.csv
 
 EX03_PYTHON_FILE_NAME = automatic_table.py
+
 EX04_PYTHON_FILE_NAME = items_table.py
 
 
-.PHONY: up psql down env withoutpw\
+.PHONY: up psql down env withoutpw manage_app_directory \
+		docker_checks postgres_container python_container \
 		ex00 \
 		ex01-setup ex01-clean \
 		download unzip ex02-import_data ex02-verify_data ex02-clean \
@@ -24,7 +28,7 @@ EX04_PYTHON_FILE_NAME = items_table.py
 		ex04
 
 
-up: unzip
+up: unzip env
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
 
@@ -32,16 +36,18 @@ docker_checks:
 	docker ps
 	docker volume ls
 
-container:
-	$(DOCKER_EXEC) bash
+postgres_container:
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) bash
+
+python_container:
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) bash
 
 psql:
-	$(DOCKER_RUN)
+	$(POSTGRES_RUN)
 
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 	$(MAKE) docker_checks
-
 #	docker volume rm $(docker volume ls -q)
 
 manage_app_directory:
@@ -52,15 +58,24 @@ manage_app_directory:
 	fi
 
 	@if [ -f $(APP_DIR_NAME)/$(EX03_PYTHON_FILE_NAME) ]; then \
-		echo "$(EX03_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy"; \
+		echo "$(EX03_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy."; \
 	else \
 		cp ex03/$(EX03_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
+		echo "ex03/$(EX03_PYTHON_FILE_NAME) copied into the $(APP_DIR_NAME) directory."; \
 	fi
 
 	@if [ -f $(APP_DIR_NAME)/$(EX04_PYTHON_FILE_NAME) ]; then \
-		echo "$(EX04_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy"; \
+		echo "$(EX04_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy."; \
 	else \
-		cp ex03/$(EX04_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
+		cp ex04/$(EX04_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
+		echo "ex04/$(EX04_PYTHON_FILE_NAME) copied into the $(APP_DIR_NAME) directory."; \
+	fi
+
+	@if [ -f $(APP_DIR_NAME)/requirements.txt ]; then \
+		echo "requirements.txt already in $(APP_DIR_NAME); skipping copy."; \
+	else \
+		cp requirements.txt $(APP_DIR_NAME)/ ; \
+		echo "requirements.txt copied into the $(APP_DIR_NAME) directory."; \
 	fi
 
 download: manage_app_directory
@@ -98,11 +113,10 @@ adminer:
 	@echo "   - Database: piscineds"
 
 withoutpw:
-	$(DOCKER_EXEC) -U nstoutze -d piscineds -h localhost
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) -U nstoutze -d piscineds -h localhost
 # Checks the pg_hba.conf file to know what method is used to authenticate during a db connection:
 # docker exec -it postgres_piscineds sh
 #	cat /var/lib/postgresql/data/pg_hba.conf
-
 
 env:
 	@if [ -f .env ]; then \
@@ -115,20 +129,22 @@ env:
 		echo "POSTGRES_HOST=localhost" >> .env; \
 		echo "POSTGRES_PORT=5432" >> .env; \
 		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
+		echo "PYTHON_CONTAINER_NAME=python" >> .env; \
 		echo ".env file created successfully."; \
 	fi
 # Unable to make the makefile work with a heredoc.
 
 
-ex00: up psql down
+ex00: up
+	psql
 
 
 ex01-setup: up
 	@echo "Waiting for PostgreSQL to be ready..."
 	@for i in {1..10}; do \
-		$(DOCKER_EXEC) $(PSQL_COMMAND) "SELECT 1" && break || sleep 2; \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "SELECT 1" && break || sleep 2; \
 	done
-#		Reminder : DOCKER_EXEC = docker exec -it postgres_piscineds
+#		Reminder : DOCKER_EXEC =$(POSTGRES_CONTAINER_NAME)  docker exec -it postgres_piscineds
 #			It then starts a session inside the postgres docker container.
 #			Everything next will be handled from the container.
 #			-U for specifying the user, -d the database
@@ -141,13 +157,13 @@ ex01-setup: up
 #					FATAL: password authentication failed for user "nstoutze"
 #					FATAL: database "piscineds" does not exist
 #				If one of these occurs, the command part result into FALSE, and the break is not reached.
-#	About the $(DOCKER_EXEC) commands in a Makefile :
+#	About the $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) commands in a Makefile :
 #		Each of them are related to a specific session running as long as the command has still something to do.
 #		After a command running, the docker session is over.
-#		That is why it is possible to read many $(DOCKER_EXEC) calls in this Makefile.
+#		That is why it is possible to read many $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) calls in this Makefile.
 
 	@echo "Creating table $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "\
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
 	CREATE TABLE $(EXAMPLE_TABLE_NAME) ( \
 		event_time TIMESTAMP NOT NULL, \
 		event_type VARCHAR(50), \
@@ -161,7 +177,7 @@ ex01-setup: up
 	);"
 
 	@echo "Inserting data into $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "\
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
 	INSERT INTO $(EXAMPLE_TABLE_NAME) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) VALUES \
 	('2022-10-01 00:00:00', 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
 	('2022-10-01 00:00:03', 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
@@ -175,14 +191,15 @@ ex01-setup: up
 
 ex01-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
-ex02-import_data:
+
+ex02-import_data: up ex01-clean
 	@if [ -f $(SQL_FILE) ]; then \
 		echo "Copying SQL file to container..."; \
 		docker cp $(SQL_FILE) postgres_piscineds:/create_and_import.sql; \
 		echo "Executing SQL file to create table and import data..."; \
-		$(DOCKER_EXEC) psql -U nstoutze -d piscineds -f /create_and_import.sql; \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) psql -U nstoutze -d piscineds -f /create_and_import.sql; \
 		echo "Table created and data imported successfully!"; \
 	else \
 		echo "Error: $(SQL_FILE) not found."; \
@@ -190,24 +207,24 @@ ex02-import_data:
 
 # -f is a psql option for running .sql files
 
-ex02-verify_data:
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "\
+ex02-verify_data: up
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
 	SELECT COUNT(*) FROM data_2022_dec; \
 	SELECT * FROM data_2022_dec LIMIT 10;"
 
-ex02-clean:
-	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS data_2022_dec;"
-	@$(DOCKER_EXEC) rm -f \
+ex02-clean: up
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "DROP TABLE IF EXISTS data_2022_dec;"
+	@$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) rm -f \
 		create_and_import.sql \
 		data_2022_dec.csv \
 		|| echo "Files already removed or not found."
 
 
-ex03:
-	cd ex03 ; python3 automatic_table.py
+ex03: up ex02-clean
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX03_PYTHON_FILE_NAME)
 
-ex04:
-	cd ex04 ; python3 items_table.py
+ex04: up
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX04_PYTHON_FILE_NAME)
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
