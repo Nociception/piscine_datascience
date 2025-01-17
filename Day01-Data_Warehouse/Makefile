@@ -10,7 +10,6 @@ FEB_CSV = data_2023_feb.csv
 EX01_PYTHON_FILE = customers_table.py
 EX02_PYTHON_FILE = remove_duplicates.py
 
-
 .PHONY: up psql down env withoutpw download unzip \
 		ex00-setup ex00-clean \
 		ex01 \
@@ -18,7 +17,7 @@ EX02_PYTHON_FILE = remove_duplicates.py
 		ex03 \
 
 
-up: unzip
+up: unzip env
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
 
@@ -32,11 +31,9 @@ container:
 psql:
 	docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
 
-
 down:
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 	$(MAKE) docker_checks
-
 #	docker volume rm $(docker volume ls -q)
 
 download:
@@ -96,7 +93,6 @@ withoutpw:
 # docker exec -it postgres_piscineds sh
 #	cat /var/lib/postgresql/data/pg_hba.conf
 
-
 env:
 	@if [ -f .env ]; then \
 		echo ".env file already exists. Skipping creation."; \
@@ -151,18 +147,13 @@ ex00-clean:
 	$(DOCKER_EXEC) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
 
-# EX01_STATUS = 0
 ex01: unzip
 	cd ex01 ; python3 $(EX01_PYTHON_FILE)
-#	EX01_STATUS = 1
 
 
-ex02: unzip
-#	if EX01_STATUS
+ex02: ex01
 	cd ex02 ; python3 $(EX02_PYTHON_FILE)
 
-ex02-clean: unzip
-	ls
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)

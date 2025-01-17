@@ -31,24 +31,79 @@ def get_env_variables() -> dict[str, str]:
     return env_variables
 
 
+def get_connection_cursor(
+    env_variables: dict[str, str],
+    autocommit: bool
+) -> tuple[psycopg.Connection, psycopg.Cursor]:
+    """
+    Provides a psycopg connection cursor,
+    according to the environment varibles provided.
+    Autocommit depending on the `autocommit` parameter.
+    """
+
+    connection = psycopg.connect(
+        user=env_variables["postgres_user"],
+        password=env_variables["postgres_password"],
+        dbname=env_variables["postgres_db"],
+        host=env_variables["postgres_host"],
+        port=env_variables["postgres_port"],
+        autocommit=autocommit
+    )
+    cursor = connection.cursor()
+    print(
+        f"Connected to the database"
+        f"`{env_variables['postgres_db']}` successfully."
+    )
+    
+    return connection, cursor
+
+
 def create_customers_table(
     cursor: psycopg.Cursor,
     table_name: str
-):
-    """Creates the `customers` table."""
+) -> bool:
+    """
+    Creates the `customers` table if does not exist.
+    Returns True if the table exists but is empty,
+    indicating taht data import is needed.
+    Returns False if the table already exists and is populated.
+    """
 
-    create_table_query = f"""
-    CREATE TABLE IF NOT EXISTS {table_name} (
-        event_time TIMESTAMPTZ,
-        event_type VARCHAR(50),
-        product_id INT,
-        price NUMERIC(10, 2),
-        user_id BIGINT,
-        user_session UUID
+    check_table_query = f"""
+    SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_name = '{table_name}'
     );
     """
-    cursor.execute(create_table_query)
-    print(f"Table `{table_name}` created (if not exists).")
+    cursor.execute(check_table_query)
+    table_exists = cursor.fetchone()[0]
+
+    if not table_exists:
+        create_table_query = f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            event_time TIMESTAMPTZ,
+            event_type VARCHAR(50),
+            product_id INT,
+            price NUMERIC(10, 2),
+            user_id BIGINT,
+            user_session UUID
+        );
+        """
+        cursor.execute(create_table_query)
+        print(f"Table `{table_name}` created.")
+
+    count_query = f"SELECT COUNT(*) FROM {table_name};"
+    cursor.execute(count_query)
+    row_count = cursor.fetchone()[0]
+
+    import_needed = not bool(row_count)
+    print(
+            f"Table `{table_name}` exists but is empty."
+            f" Import is needed."
+            if import_needed else
+            f"Table `{table_name}` exists and is already populated."
+    )
+    return import_needed
 
 
 def import_csv_to_customers_table(
@@ -69,6 +124,47 @@ def import_csv_to_customers_table(
     print(f"Data from {csv_file_path} imported into `{table_name}`.")
 
 
+def analyze_table(
+    cursor:psycopg.Cursor,
+    table_name: str
+) -> None:
+    """
+    Performs an ANALYZE on the table,
+    in order to get the right rows number on adminer.
+    """
+
+    analyze_query = f"ANALYZE {table_name};"
+    cursor.execute(analyze_query)
+
+
+def was_vacuumed(
+    cursor:psycopg.Cursos,
+    table_name: str
+) -> bool:
+    """
+    Checks if the table was vacuumed recently
+    by querying pg_stat_user_tables.
+    """
+
+    
+
+
+def vacuum_table(
+    cursor:psycopg.Cursor,
+    table_name: str,
+    full: bool
+) -> None:
+    """
+    Performs an VACUUM (FULL depends on the `full` parameter)
+    on the table, in order to get the right rows number on adminer.
+    """
+
+    full = ' FULL ' if full else ' '
+    vacuum_query = f"VACUUM{full}{table_name}"
+    cursor.execute(vacuum_query)
+    print(f"VACUUM{full}command run on the table {table_name}.")
+
+
 def main():
     """Main function to join customer data into a single table."""
 
@@ -78,51 +174,74 @@ def main():
 
     try:
         env_variables = get_env_variables()
-        connection = psycopg.connect(
-            user=env_variables["postgres_user"],
-            password=env_variables["postgres_password"],
-            dbname=env_variables["postgres_db"],
-            host=env_variables["postgres_host"],
-            port=env_variables["postgres_port"],
-        )
-        cursor = connection.cursor()
-        print("Connected to the database successfully.")
 
-        csv_dir = Path(HOST_CSV_DIR).resolve()
-        assert csv_dir.exists(), (
-            f"ERROR: CSV directory not found at {csv_dir}"
-        )
-        print(f"CSV directory resolved to: {csv_dir}")
-
-        csv_files = [
-            file.name for file in csv_dir.iterdir()
-            if file.is_file() and file.suffix == ".csv"
-        ]
-        if not csv_files:
-            print("No CSV files found in the CSV directory.")
-            return
-        print(f"CSV files found: {csv_files}")
-
-        create_customers_table(cursor, TABLE_NAME)
-
-        for csv_file in csv_files:
-            import_csv_to_customers_table(
-                cursor,
-                os.path.join(CONTAINER_CSV_DIR, csv_file),
-                TABLE_NAME
+        try :
+            connection, cursor = get_connection_cursor(
+                env_variables,
+                autocommit=False
             )
 
-        connection.commit()
-        print("All CSV files have been imported into the `customers` table.")
+            csv_dir = Path(HOST_CSV_DIR).resolve()
+            assert csv_dir.exists(), (
+                f"ERROR: CSV directory not found at {csv_dir}"
+            )
+            print(f"CSV directory resolved to: {csv_dir}")
+
+            csv_files = [
+                file.name for file in csv_dir.iterdir()
+                if file.is_file() and file.suffix == ".csv"
+            ]
+            if not csv_files:
+                print(f"No CSV files found in the CSV directory {csv_dir}.")
+                return
+            print(f"CSV files found: {csv_files}")
+
+            import_needed = create_customers_table(cursor, TABLE_NAME)
+
+            if import_needed:
+                for csv_file in csv_files:
+                    import_csv_to_customers_table(
+                        cursor,
+                        os.path.join(CONTAINER_CSV_DIR, csv_file),
+                        TABLE_NAME
+                    )
+
+                analyze_table(cursor,TABLE_NAME)
+
+                print(
+                    f"All CSV files have been imported into"
+                    f" the `{TABLE_NAME}` table.")
+
+            connection.commit()
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        finally:
+            if 'connection' in locals() and connection:
+                connection.close()
+                print("Database connection closed.")
+
+        try:
+            connection, cursor = get_connection_cursor(
+                env_variables,
+                autocommit=True
+            )
+
+            if not was_vacuumed(cursor, TABLE_NAME):
+                vacuum_table(cursor, TABLE_NAME, full=True)
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        finally:
+            if 'connection' in locals() and connection:
+                connection.close()
+                print("Database connection closed.")
 
     except Exception as e:
-        print(f"An error occurred: {e}")
-
-    finally:
-        if 'connection' in locals() and connection:
-            connection.close()
-            print("Database connection closed.")
-
+            print(f"An error occurred: {e}")
+        
 
 if __name__ == "__main__":
     main()
