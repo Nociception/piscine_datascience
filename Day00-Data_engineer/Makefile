@@ -6,12 +6,14 @@ EXAMPLE_TABLE_NAME = example_table
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
+APP_DIR_NAME = app
 
 SQL_FILE = ex02/table.sql
 CSV_FILE = subject/customer/data_2022_dec.csv
 CSV_CONTAINER_PATH = /data_2022_dec.csv
 
-
+EX03_PYTHON_FILE_NAME = automatic_table.py
+EX04_PYTHON_FILE_NAME = items_table.py
 
 
 .PHONY: up psql down env withoutpw\
@@ -42,7 +44,26 @@ down:
 
 #	docker volume rm $(docker volume ls -q)
 
-download:
+manage_app_directory:
+	@if [ -d $(APP_DIR_NAME) ]; then \
+		echo "$(APP_DIR_NAME) already exists. Skipping creation."; \
+	else \
+		mkdir app ; \
+	fi
+
+	@if [ -f $(APP_DIR_NAME)/$(EX03_PYTHON_FILE_NAME) ]; then \
+		echo "$(EX03_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy"; \
+	else \
+		cp ex03/$(EX03_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
+	fi
+
+	@if [ -f $(APP_DIR_NAME)/$(EX04_PYTHON_FILE_NAME) ]; then \
+		echo "$(EX04_PYTHON_FILE_NAME) already in $(APP_DIR_NAME); skipping copy"; \
+	else \
+		cp ex03/$(EX04_PYTHON_FILE_NAME) $(APP_DIR_NAME)/ ; \
+	fi
+
+download: manage_app_directory
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
 	else \
