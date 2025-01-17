@@ -19,7 +19,7 @@ EX03_PYTHON_FILE_NAME = automatic_table.py
 EX04_PYTHON_FILE_NAME = items_table.py
 
 
-.PHONY: up psql down env withoutpw manage_app_directory \
+.PHONY: up psql down env withoutpw manage_app_directory end fclean\
 		docker_checks postgres_container python_container \
 		ex00 \
 		ex01-setup ex01-clean \
@@ -120,6 +120,8 @@ fclean:
 	else \
 		echo "app directory does not exist."; \
 	fi
+
+end: down fclean
 
 adminer:
 	@echo "\nTo use Adminer, follow these steps:"
