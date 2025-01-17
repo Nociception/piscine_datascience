@@ -100,7 +100,26 @@ unzip: download
 	fi
 
 fclean:
-	rm -rf subject
+	@if [ -d subject ]; then \
+		rm -rf subject; \
+		echo "subject directory deleted."; \
+	else \
+		echo "subject directory does not exist."; \
+	fi
+
+	@if [ -f $(OUTPUT_ZIP) ]; then \
+		rm -rf $(OUTPUT_ZIP); \
+		echo "$(OUTPUT_ZIP) file deleted."; \
+	else \
+		echo "subject file does not exist."; \
+	fi
+
+	@if [ -d app ]; then \
+		rm -rf app; \
+		echo "app directory deleted."; \
+	else \
+		echo "app directory does not exist."; \
+	fi
 
 adminer:
 	@echo "\nTo use Adminer, follow these steps:"
