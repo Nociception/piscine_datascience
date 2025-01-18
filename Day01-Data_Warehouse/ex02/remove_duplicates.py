@@ -1,20 +1,11 @@
 import os
 import psycopg
-import dotenv
-import csv
 from pathlib import Path
 
 
 def get_env_variables() -> dict[str, str]:
     """Returns the .env variables in a dictionary."""
-    dotenv_path = Path("../.env")
-    assert dotenv_path.exists(), (
-        f"ERROR: .env file not found at {dotenv_path.resolve()}"
-    )
-    print(f".env file found at {dotenv_path.resolve()}")
 
-    dotenv.load_dotenv(dotenv_path=dotenv_path)
-    print("Step: Loading environment variables.")
     env_variables = {
         "postgres_user": os.getenv("POSTGRES_USER"),
         "postgres_password": os.getenv("POSTGRES_PASSWORD"),
@@ -27,6 +18,7 @@ def get_env_variables() -> dict[str, str]:
         f"ERROR: Missing one or more environment variables.\n"
         f"env_variables:\n{env_variables}"
     )
+
     return env_variables
 
 

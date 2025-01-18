@@ -135,8 +135,36 @@ def was_vacuumed(
     """
     Checks if the table was vacuumed recently
     by querying pg_stat_user_tables.
+
+    Returns a boolean depending of a recent vacuum:
+    True if a recent is logged
+    False otherwise
+
+    Raises a SystemError if the query does not produces any result.
     """
-    return True
+
+    check_recent_vacuum_query = """
+    SELECT last_vacuum IS NOT NULL
+    FROM pg_stat_user_tables
+    WHERE relname = %s;
+    """
+    cursor.execute(check_recent_vacuum_query, (table_name,))
+    
+    result = cursor.fetchone()
+    if result is not None:
+        result = result[0]
+        print(
+            f"Table {table_name} has been vacuumed recently. "
+            f"Vacuum skipped."
+            if result else
+            f"No recent vacuum."
+        )
+        return bool(result)
+
+    else:
+        raise SystemError("SQL query did not produce any result.")
+    
+
 
 def vacuum_table(
     cursor:psycopg.Cursor,
@@ -148,10 +176,16 @@ def vacuum_table(
     on the table, in order to get the right rows number on adminer.
     """
 
-    full = ' FULL ' if full else ' '
-    vacuum_query = f"VACUUM{full}{table_name}"
-    cursor.execute(vacuum_query)
-    print(f"VACUUM{full}command run on the table {table_name}.")
+    if not was_vacuumed(cursor, table_name):
+        full = ' FULL ' if full else ' '
+        vacuum_query = f"VACUUM{full}{table_name};"
+        cursor.execute(vacuum_query)
+        print(f"VACUUM{full}command run on the table {table_name}.")
+    else:
+        print(
+            f"VACUUM skipped for table` "
+            f"{table_name}`: already vacuumed recently."
+        )
 
 
 def main():
@@ -216,8 +250,7 @@ def main():
                 autocommit=True
             )
 
-            if not was_vacuumed(cursor, TABLE_NAME):
-                vacuum_table(cursor, TABLE_NAME, full=True)
+            vacuum_table(cursor, TABLE_NAME, full=True)
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -228,7 +261,7 @@ def main():
                 print("Database connection closed.")
 
     except Exception as e:
-            print(f"An error occurred: {e}")
+        print(f"An error occurred: {e}")
         
 
 if __name__ == "__main__":
