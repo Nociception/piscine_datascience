@@ -134,6 +134,44 @@ def reorder_table_by_column(
         cursor.connection.rollback()
 
 
+def remove_duplicates(
+    cursor: psycopg.Cursor,
+    table_name: str,
+    index_column_name: str
+) -> None:
+    """
+    Removes duplicates from the specified table.
+    Keeps the first occurrence of each duplicate group.
+    """
+
+    query = f"""
+    WITH ranked_rows AS (
+        SELECT *,
+               ROW_NUMBER() OVER (
+                   PARTITION BY
+                       event_type,
+                       product_id,
+                       price,
+                       user_id,
+                       user_session,
+                       DATE_TRUNC('second', event_time)
+                   ORDER BY event_time
+               ) AS row_num
+        FROM {table_name}
+    )
+    DELETE FROM {table_name}
+    WHERE {index_column_name} IN (
+        SELECT {index_column_name}
+        FROM ranked_rows
+        WHERE row_num > 1
+    );
+    """
+    print(f"Removing duplicates from `{table_name}`...")
+    cursor.execute(query)
+    print("Duplicates removed.")
+
+
+
 def main() -> None:
     """Main function to add an index column to the `customers` table."""
 
@@ -166,13 +204,13 @@ def main() -> None:
             INDEX_COLUMN_NAME
         )
 
-        # truncate_event_time_to_tens(
-        #     cursor,
-        #     TABLE_NAME            
-        # )
+        remove_duplicates(
+            cursor,
+            TABLE_NAME,
+            INDEX_COLUMN_NAME
+        )
 
         connection.commit()
-        print("Index column added successfully.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
