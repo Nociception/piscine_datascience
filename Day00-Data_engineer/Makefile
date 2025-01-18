@@ -149,6 +149,8 @@ fclean:
 		echo "$(APP_DIR_NAME) directory does not exist."; \
 	fi
 
+	docker-compose -f $(COMPOSE_FILE) down --volumes
+
 	@if [ -f .env ]; then \
 		rm .env; \
 		echo ".env file deleted."; \
@@ -156,7 +158,6 @@ fclean:
 		echo ".env file does not exist."; \
 	fi
 
-	docker-compose -f $(COMPOSE_FILE) down --volumes
 
 
 end: down fclean
