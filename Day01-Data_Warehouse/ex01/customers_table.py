@@ -149,6 +149,9 @@ def was_vacuumed(
     WHERE relname = %s;
     """
     cursor.execute(check_recent_vacuum_query, (table_name,))
+    # Linked parameters are prefered here, instead of a fstring,
+    # in order to prevent SQL injection.
+    # Only usable when parameters do not refer to table/column names.
     
     result = cursor.fetchone()
     if result is not None:
@@ -164,7 +167,6 @@ def was_vacuumed(
     else:
         raise SystemError("SQL query did not produce any result.")
     
-
 
 def vacuum_table(
     cursor:psycopg.Cursor,
