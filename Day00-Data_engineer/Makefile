@@ -121,6 +121,13 @@ fclean:
 		echo "$(APP_DIR_NAME) directory does not exist."; \
 	fi
 
+	@if [ -f .env ]; then \
+		rm .env; \
+		echo ".env file deleted."; \
+	else \
+		echo ".env file does not exist."; \
+	fi
+
 end: down fclean
 
 adminer:
