@@ -20,7 +20,7 @@ EX04_PYTHON_FILE = items_table.py
 
 
 .PHONY: up psql down env withoutpw manage_app_directory end fclean\
-		docker_checks postgres_container python_container \
+		docker_checks postgres_container python_container update_py_files\
 		ex00 \
 		ex01-setup ex01-clean \
 		download unzip ex02-import_data ex02-verify_data ex02-clean \
@@ -28,9 +28,36 @@ EX04_PYTHON_FILE = items_table.py
 		ex04 \
 
 
-up: unzip env
+up: unzip env update_py_files
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
+
+update_py_files:
+	@echo "Checking for differences in Python files..."
+
+	@DIFF_EX03=0; \
+	DIFF_EX04=0; \
+	
+	if ! diff -q ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE) > /dev/null; then \
+		echo "Differences found in ex03 files. Updating..."; \
+		cp ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE); \
+		DIFF_EX03=1; \
+	fi; \
+	
+	if ! diff -q ex04/$(EX04_PYTHON_FILE) app/$(EX04_PYTHON_FILE) > /dev/null; then \
+		echo "Differences found in ex04 files. Updating..."; \
+		cp ex04/$(EX04_PYTHON_FILE) app/$(EX04_PYTHON_FILE); \
+		DIFF_EX04=1; \
+	fi; \
+	
+	if [ $$DIFF_EX03 -eq 1 ] || [ $$DIFF_EX04 -eq 1 ]; then \
+		echo "Restarting Python container..."; \
+		docker kill $(PYTHON_CONTAINER_NAME); \
+		docker-compose up -d $(PYTHON_CONTAINER_NAME); \
+		echo "$(PYTHON_CONTAINER_NAME) container restarted."; \
+	else \
+		echo "No differences found. No updates nor container restart needed."; \
+	fi
 
 docker_checks:
 	docker ps
@@ -46,6 +73,7 @@ psql:
 	$(POSTGRES_RUN)
 
 down:
+	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 	$(MAKE) docker_checks
 #	docker volume rm $(docker volume ls -q)

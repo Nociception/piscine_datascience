@@ -42,7 +42,8 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT}
     networks:
       - network
-    command: ["tail", "-f", "/dev/null"]
+    command: ["bash"]
+    tty: true
 
 
 networks:

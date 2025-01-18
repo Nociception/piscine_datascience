@@ -18,16 +18,44 @@ EX01_PYTHON_FILE = customers_table.py
 EX02_PYTHON_FILE = remove_duplicates.py
 
 .PHONY: up psql down env withoutpw manage_app_directory end fclean\
-		docker_checks postgres_container python_container \
+		docker_checks postgres_container python_container update_py_files\
 		ex00 \
 		ex01-setup ex01-clean download unzip\
 		ex02 \
 		ex03 \
 
 
-up: unzip env
+up: unzip env update_py_files
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
+
+update_py_files:
+	@echo "Checking for differences in Python files..."
+
+	@DIFF_EX01=0; \
+	DIFF_EX02=0; \
+	
+	if ! diff -q ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE) > /dev/null; then \
+		echo "Differences found in ex01 files. Updating..."; \
+		cp ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE); \
+		DIFF_EX01=1; \
+	fi; \
+	
+	if ! diff -q ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE) > /dev/null; then \
+		echo "Differences found in ex02 files. Updating..."; \
+		cp ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE); \
+		DIFF_EX02=1; \
+	fi; \
+	
+	if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ]; then \
+		echo "Restarting Python container..."; \
+		docker kill $(PYTHON_CONTAINER_NAME); \
+		docker-compose up -d $(PYTHON_CONTAINER_NAME); \
+		echo "$(PYTHON_CONTAINER_NAME) container restarted."; \
+	else \
+		echo "No differences found. No updates nor container restart needed."; \
+	fi
+
 
 docker_checks:
 	docker ps
@@ -43,6 +71,7 @@ psql:
 	$(POSTGRES_RUN)
 
 down:
+	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down --volumes
 	$(MAKE) docker_checks
 #	docker volume rm $(docker volume ls -q)
@@ -214,7 +243,7 @@ ex01: unzip up ex00-clean
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX01_PYTHON_FILE)
 
 
-ex02: up ex01
+ex02: ex01
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
 

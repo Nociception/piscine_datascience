@@ -37,6 +37,9 @@ def add_index_column(cursor: psycopg.Cursor, table_name: str, column_name: str) 
 
 def main():
     """Main function to add an index column to the `customers` table."""
+
+    print("LOL")
+
     try:
         env_variables = get_env_variables()
         connection = psycopg.connect(
@@ -48,11 +51,10 @@ def main():
         )
         cursor = connection.cursor()
         print("Connected to the database successfully.")
+        print()
 
-        # Add index column
         add_index_column(cursor, "customers", "row_index")
 
-        # Commit changes
         connection.commit()
         print("Index column added successfully.")
 
