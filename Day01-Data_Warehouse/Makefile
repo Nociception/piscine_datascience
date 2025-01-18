@@ -30,24 +30,23 @@ up: unzip env update_py_files
 	$(MAKE) docker_checks
 
 update_py_files:
-	@echo "Checking for differences in Python files..."
+	echo "Checking for differences in Python files..."
 
-	@DIFF_EX01=0; \
-	DIFF_EX02=0; \
+	@DIFF_EX01=0; DIFF_EX02=0; \
 	
-	if ! diff -q ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE) > /dev/null; then \
+	@if ! diff ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE) > /dev/null; then \
 		echo "Differences found in ex01 files. Updating..."; \
 		cp ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE); \
 		DIFF_EX01=1; \
 	fi; \
 	
-	if ! diff -q ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE) > /dev/null; then \
+	@if ! diff ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE) > /dev/null; then \
 		echo "Differences found in ex02 files. Updating..."; \
 		cp ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE); \
 		DIFF_EX02=1; \
 	fi; \
 	
-	if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ]; then \
+	@if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ]; then \
 		echo "Restarting Python container..."; \
 		docker kill $(PYTHON_CONTAINER_NAME); \
 		docker-compose up -d $(PYTHON_CONTAINER_NAME); \
@@ -72,7 +71,7 @@ psql:
 
 down:
 	docker kill $(PYTHON_CONTAINER_NAME)
-	docker-compose -f $(COMPOSE_FILE) down --volumes
+	docker-compose -f $(COMPOSE_FILE) down
 	$(MAKE) docker_checks
 #	docker volume rm $(docker volume ls -q)
 
@@ -170,6 +169,8 @@ fclean:
 		echo ".env file does not exist."; \
 	fi
 
+	docker-compose -f $(COMPOSE_FILE) down --volumes
+
 end: down fclean
 
 adminer:
@@ -243,7 +244,7 @@ ex01: unzip up ex00-clean
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX01_PYTHON_FILE)
 
 
-ex02: ex01
+ex02: up
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
 
