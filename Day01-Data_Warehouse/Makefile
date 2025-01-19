@@ -30,30 +30,30 @@ up: unzip env update_py_files
 	$(MAKE) docker_checks
 
 update_py_files:
-	echo "Checking for differences in Python files..."
+	@echo "Checking for differences in Python files..."
+	@bash -c '\
+		DIFF_EX01=0; \
+		DIFF_EX02=0; \
+		if ! diff ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE) > /dev/null; then \
+			echo "Differences found in ex01 files. Updating..."; \
+			cp ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE); \
+			DIFF_EX01=1; \
+		fi; \
+		if ! diff ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE) > /dev/null; then \
+			echo "Differences found in ex02 files. Updating..."; \
+			cp ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE); \
+			DIFF_EX02=1; \
+		fi; \
+		echo "DIFF_EX01 = $$DIFF_EX01 ; DIFF_EX02 = $$DIFF_EX02"; \
+		if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ]; then \
+			echo "Restarting Python container..."; \
+			docker kill $(PYTHON_CONTAINER_NAME); \
+			docker-compose up -d $(PYTHON_CONTAINER_NAME); \
+			echo "$(PYTHON_CONTAINER_NAME) container restarted."; \
+		else \
+			echo "No differences found. No updates nor container restart needed."; \
+		fi'
 
-	@DIFF_EX01=0; DIFF_EX02=0; \
-	
-	@if ! diff ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE) > /dev/null; then \
-		echo "Differences found in ex01 files. Updating..."; \
-		cp ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE); \
-		DIFF_EX01=1; \
-	fi; \
-	
-	@if ! diff ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE) > /dev/null; then \
-		echo "Differences found in ex02 files. Updating..."; \
-		cp ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE); \
-		DIFF_EX02=1; \
-	fi; \
-	
-	@if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ]; then \
-		echo "Restarting Python container..."; \
-		docker kill $(PYTHON_CONTAINER_NAME); \
-		docker-compose up -d $(PYTHON_CONTAINER_NAME); \
-		echo "$(PYTHON_CONTAINER_NAME) container restarted."; \
-	else \
-		echo "No differences found. No updates nor container restart needed."; \
-	fi
 
 
 docker_checks:

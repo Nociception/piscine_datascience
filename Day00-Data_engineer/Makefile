@@ -34,30 +34,29 @@ up: unzip env update_py_files
 
 update_py_files:
 	@echo "Checking for differences in Python files..."
+	@bash -c '\
+		DIFF_EX03=0; \
+		DIFF_EX04=0; \
+		if ! diff ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE) > /dev/null; then \
+			echo "Differences found in ex03 files. Updating..."; \
+			cp ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE); \
+			DIFF_EX03=1; \
+		fi; \
+		if ! diff ex04/$(EX04_PYTHON_FILE) app/$(EX04_PYTHON_FILE) > /dev/null; then \
+			echo "Differences found in ex04 files. Updating..."; \
+			cp ex04/$(EX04_PYTHON_FILE) app/$(EX04_PYTHON_FILE); \
+			DIFF_EX04=1; \
+		fi; \
+		echo "DIFF_EX03 = $$DIFF_EX03 ; DIFF_EX04 = $$DIFF_EX04"; \
+		if [ $$DIFF_EX03 -eq 1 ] || [ $$DIFF_EX04 -eq 1 ]; then \
+			echo "Restarting Python container..."; \
+			docker kill $(PYTHON_CONTAINER_NAME); \
+			docker-compose up -d $(PYTHON_CONTAINER_NAME); \
+			echo "$(PYTHON_CONTAINER_NAME) container restarted."; \
+		else \
+			echo "No differences found. No updates nor container restart needed."; \
+		fi'
 
-	@DIFF_EX03=0; \
-	DIFF_EX04=0; \
-	
-	@if ! diff -q ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE) > /dev/null; then \
-		echo "Differences found in ex03 files. Updating..."; \
-		cp ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE); \
-		DIFF_EX03=1; \
-	fi; \
-	
-	@if ! diff -q ex04/$(EX04_PYTHON_FILE) app/$(EX04_PYTHON_FILE) > /dev/null; then \
-		echo "Differences found in ex04 files. Updating..."; \
-		cp ex04/$(EX04_PYTHON_FILE) app/$(EX04_PYTHON_FILE); \
-		DIFF_EX04=1; \
-	fi; \
-	
-	@if [ $$DIFF_EX03 -eq 1 ] || [ $$DIFF_EX04 -eq 1 ]; then \
-		echo "Restarting Python container..."; \
-		docker kill $(PYTHON_CONTAINER_NAME); \
-		docker-compose up -d $(PYTHON_CONTAINER_NAME); \
-		echo "$(PYTHON_CONTAINER_NAME) container restarted."; \
-	else \
-		echo "No differences found. No updates nor container restart needed."; \
-	fi
 
 docker_checks:
 	docker ps
