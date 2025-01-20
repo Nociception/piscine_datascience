@@ -54,7 +54,10 @@ def add_index_column(
     """
 
     if column_exists(cursor, table_name, column_name):
-        print(f"Column `{column_name}` already exists in `{table_name}`. Skipping.")
+        print(
+            f"Column `{column_name}`"
+            f" already exists in `{table_name}`. Skipping."
+        )
         return
 
     try:
@@ -66,7 +69,10 @@ def add_index_column(
         cursor.execute(add_column_query)
         print(f"Column `{column_name}` added to `{table_name}` successfully.")
     except psycopg.errors.DuplicateColumn:
-        print(f"Column `{column_name}` already exists in `{table_name}`. Skipping.")
+        print(
+            f"Column `{column_name}` already exists in"
+            f" `{table_name}`. Skipping."
+        )
     except Exception as e:
         print(f"An unexpected error occurred while adding column: {e}")
 
@@ -115,7 +121,30 @@ def create_test_table(
     cursor: psycopg.Cursor,
     test_table_name: str
 ) -> None:
-    """DOCSTRING"""
+    """
+    Creates and populates a test table with five cases:
+    - lines 24 and 28:
+        are the same
+        separated by 3 lines with the same timestamp,
+        but different on the other columns (user session)
+    - lines 38 and 43:
+        are the same, except the 1 sec timestamp delta
+        separated by 4 lines with the same timestamp as the 38th,
+        but different on the other columns (user session)
+    - lines 56 and 57:
+        are the same
+    - lines 59 and 60:
+        are the same, except the 1 sec timestamp delta
+
+    Test table already time sorted.
+
+    Legends for the comments:
+    - SLA: Same line as
+    - TD1: time delta 1 second
+
+    After the duplicates deletion,
+    the following must be deleted: 28, 43, 50, 56, 57, 60
+    """
 
     table_creation_query = f"""
         DROP TABLE IF EXISTS {test_table_name};
@@ -132,10 +161,6 @@ def create_test_table(
     """
     cursor.execute(table_creation_query)
 
-    # Test table already time sorted
-    # SLA: Same line as
-    # TD1 : time delta 1 second
-    # After the duplicates deletion, the following must be deleted: 28, 43, 50, 58
     sample_data = [
         ("2022-11-01 00:03:14+00", "view", 5888548, 3.97, 429913900, "2f0bff3c-252f-4fe6-afcd-5d8a6a92839a", 0),
         ("2022-11-01 00:03:38+00", "cart", 5864286, 20.16, 565876667, "cf5d7069-7465-4ec5-a9be-c911bc1b9f95", 1),
@@ -193,9 +218,11 @@ def create_test_table(
         ("2022-11-01 00:06:34+00", "view", 5864545, 19.05, 565876667, "cf5d7069-7465-4ec5-a9be-c911bc1b9f95", 53),
         ("2022-11-01 00:06:36+00", "view", 5893540, 7.44, 562817002, "32e737b9-7439-40b0-9011-33a0f757cdf8", 54),
         ("2022-11-01 00:06:42+00", "cart", 5770294, 1.59, 514649199, "dd20e3bf-021f-4633-a9c7-18b6158b2006", 55),
-        ("2022-11-01 00:06:55+00", "view", 5747404, 6.33, 554428484, "64ccbe91-91f6-4671-b276-857dfa0e99aa", 56),
-        ("2022-11-01 00:13:19+00", "remove_from_cart", 5749150, 0.22, 202438687, "8dc848f5-bac3-44d7-9414-75d4e599abaf", 57),
-        ("2022-11-01 00:13:20+00", "remove_from_cart", 5749150, 0.22, 202438687, "8dc848f5-bac3-44d7-9414-75d4e599abaf", 58),  # SLA above TD1
+        ("2022-11-01 00:06:42+00", "cart", 5770294, 1.59, 514649199, "dd20e3bf-021f-4633-a9c7-18b6158b2006", 56),  # SLA above
+        ("2022-11-01 00:06:42+00", "cart", 5770294, 1.59, 514649199, "dd20e3bf-021f-4633-a9c7-18b6158b2006", 57),  # SLA above (the second one in a row)
+        ("2022-11-01 00:06:55+00", "view", 5747404, 6.33, 554428484, "64ccbe91-91f6-4671-b276-857dfa0e99aa", 58),
+        ("2022-11-01 00:13:19+00", "remove_from_cart", 5749150, 0.22, 202438687, "8dc848f5-bac3-44d7-9414-75d4e599abaf", 59),
+        ("2022-11-01 00:13:20+00", "remove_from_cart", 5749150, 0.22, 202438687, "8dc848f5-bac3-44d7-9414-75d4e599abaf", 60),  # SLA above TD1
     ]
 
     cursor.executemany(
@@ -206,37 +233,102 @@ def create_test_table(
 
 def remove_close_timestamp_duplicates(
     cursor: psycopg.Cursor,
-    table_name: str
+    table_name: str,
+    details: bool=False
 ) -> None:
     """
-    DOCSTRING
-    """
+    Removes duplicates with one second delta tolerance criteria.
+    This function is supposed to be called on a time sorted table.
 
-    # revoir l'ordre des comparaisons, et etudier l'effet sur les performances
+    Uses a SQL command which does:
+        a self join on the table
+        in order to compare each line with
+        all precedent ones: n*(n+1)/2 comparisons
+        Order of column comparisons matters:
+            it can lead to halves time execution.
+
+    Initial rows number : 20,692,840
+
+    Stats, depending the comparisons order:
+        ORDER1:
+            t1.product_id = t2.product_id
+            AND t1.event_type = t2.event_type
+            AND t1.price = t2.price
+            AND t1.user_id = t2.user_id
+            AND t1.user_session = t2.user_session
+            AND ABS(EXTRACT(EPOCH FROM t1.event_time) - EXTRACT(EPOCH FROM t2.event_time)) <= 1
+            AND t1.ctid > t2.ctid;
+            
+            Execution time: 62,909.513 ms
+            Number of rows deleted: 1,516,182
+            
+        ORDER2 (same order as 1st,
+            except the last column comparison (index instead of ctid)):
+            t1.product_id = t2.product_id
+            AND t1.event_type = t2.event_type
+            AND t1.price = t2.price
+            AND t1.user_id = t2.user_id
+            AND t1.user_session = t2.user_session
+            AND ABS(EXTRACT(EPOCH FROM t1.event_time) - EXTRACT(EPOCH FROM t2.event_time)) <= 1
+            AND t1.index > t2.index;
+            
+            Execution time: 62,109.124 ms
+            Number of rows deleted: 1,516,182
+
+        ORDER3
+            t1.index > t2.index
+            AND t1.user_id = t2.user_id
+            AND ABS(EXTRACT(EPOCH FROM t1.event_time) - EXTRACT(EPOCH FROM t2.event_time)) <= 1
+            AND t1.product_id = t2.product_id
+            AND t1.event_type = t2.event_type
+            AND t1.price = t2.price
+            AND t1.user_session = t2.user_session
+
+            Execution time: 32,459.129 ms !!!!!
+            Number of rows deleted: 1,516,182
+    """
 
     query = f"""
     EXPLAIN ANALYZE
     DELETE FROM {table_name} t1
     USING {table_name} t2
     WHERE 
-        t1.product_id = t2.product_id
+        t1.index > t2.index
+        AND t1.user_id = t2.user_id
+        AND ABS(EXTRACT(EPOCH FROM t1.event_time) - EXTRACT(EPOCH FROM t2.event_time)) <= 1
+        AND t1.product_id = t2.product_id
         AND t1.event_type = t2.event_type
         AND t1.price = t2.price
-        AND t1.user_id = t2.user_id
         AND t1.user_session = t2.user_session
-        AND ABS(EXTRACT(EPOCH FROM t1.event_time) - EXTRACT(EPOCH FROM t2.event_time)) <= 1
-        AND t1.ctid > t2.ctid;
     """
     cursor.execute(query)
     print(f"Duplicates with close timestamps removed from `{table_name}`.")
+    
+    if details:
+        explain_analyze_report = cursor.fetchall()
+        print("\nDetails from EXPLAIN ANALYZE:")
+        for row in explain_analyze_report:
+            print(row[0])
 
 
 def main() -> None:
-    """Main function to add an index column to the `customers` table."""
+    """
+    Main function:
+    - creates a test_table for testing
+        the remove_close_timestamp_duplicates function
+    - sorts the `table_target` table on time criteria (first column)
+    - adds an index column to the `table_target` table
+    - removes duplicates with an one second time delta tolerance
+
+    Adjust the `table_target` variable to work whether on the `test` table,
+    or the `customers` table:
+    - 't' targets the `test` table
+    - something else targets the `customers` table
+    """
 
     TABLE_NAME = "customers"
-    INDEX_COLUMN_NAME = "index"
     TEST_TABLE_NAME = "test"
+    INDEX_COLUMN_NAME = "index"
 
     try:
         env_variables = get_env_variables()
@@ -255,9 +347,9 @@ def main() -> None:
             cursor,
             TEST_TABLE_NAME
         )
-        
+
         table_target = "t"
-        
+
         reorder_table_by_column(
             cursor,
             TEST_TABLE_NAME if table_target == "t" else TABLE_NAME,
@@ -265,15 +357,17 @@ def main() -> None:
             INDEX_COLUMN_NAME
         )
 
-        # add_index_column(
-        #     cursor,
-        #     TABLE_NAME,
-        #     INDEX_COLUMN_NAME
-        # )
+        if table_target != "t":
+            add_index_column(
+                cursor,
+                TABLE_NAME,
+                INDEX_COLUMN_NAME
+            )
         
         remove_close_timestamp_duplicates(
             cursor,
             TEST_TABLE_NAME if table_target == "t" else TABLE_NAME,
+            details=True
         )
 
         connection.commit()

@@ -1,4 +1,3 @@
-# create a metadata table in order to check more easily if a population, analyse or vacuum is needed.
 # add the subject for each exercise
 
 COMPOSE_FILE = docker-compose.yaml
@@ -19,6 +18,9 @@ FEB_CSV = data_2023_feb.csv
 EX01_PYTHON_FILE = customers_table.py
 
 EX02_PYTHON_FILE = remove_duplicates.py
+
+EX03_PYTHON_FILE = fusion.py
+
 
 .PHONY: up psql down env withoutpw manage_app_directory end fclean\
 		docker_checks postgres_container python_container update_py_files\
@@ -251,6 +253,9 @@ ex01: unzip up ex00-clean
 ex02: up
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
+
+ex03: up
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
