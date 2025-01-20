@@ -1,3 +1,6 @@
+# create a metadata table in order to check more easily if a population, analyse or vacuum is needed.
+# add the subject for each exercise
+
 COMPOSE_FILE = docker-compose.yaml
 POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
 DOCKER_RUN = docker run -it --rm --network="host" postgres:latest psql -U nstoutze -d piscineds -h localhost -W
@@ -245,7 +248,7 @@ ex01: unzip up ex00-clean
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX01_PYTHON_FILE)
 
 
-ex02: up
+ex02: up ex01
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
 

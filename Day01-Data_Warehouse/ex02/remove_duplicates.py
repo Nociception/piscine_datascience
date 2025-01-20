@@ -111,43 +111,6 @@ def reorder_table_by_column(
         cursor.connection.rollback()
 
 
-def remove_duplicates(
-    cursor: psycopg.Cursor,
-    table_name: str,
-    index_column_name: str
-) -> None:
-    """
-    Removes duplicates from the specified table.
-    Keeps the first occurrence of each duplicate group.
-    """
-
-    query = f"""
-    WITH ranked_rows AS (
-        SELECT *,
-               ROW_NUMBER() OVER (
-                   PARTITION BY
-                       event_type,
-                       product_id,
-                       price,
-                       user_id,
-                       user_session,
-                       DATE_TRUNC('second', event_time)
-                   ORDER BY event_time
-               ) AS row_num
-        FROM {table_name}
-    )
-    DELETE FROM {table_name}
-    WHERE {index_column_name} IN (
-        SELECT {index_column_name}
-        FROM ranked_rows
-        WHERE row_num > 1
-    );
-    """
-    print(f"Removing duplicates from `{table_name}`...")
-    cursor.execute(query)
-    print("Duplicates removed.")
-
-
 def create_test_table(cursor):
     """DOCSTRING"""
 
@@ -223,46 +186,15 @@ def create_test_table(cursor):
     )
 
 
-def visualize_partition_without_row_number(cursor):
-    """
-    Visualizes the effect of PARTITION BY by simulating it with GROUP BY
-    without using ROW_NUMBER().
-    """
-    query = """
-    SELECT 
-        DATE_TRUNC('second', event_time) AS truncated_event_time,
-        event_type,
-        product_id,
-        price,
-        user_id,
-        user_session,
-        COUNT(*) AS group_size
-    FROM test_partition
-    GROUP BY 
-        DATE_TRUNC('second', event_time),
-        event_type,
-        product_id,
-        price,
-        user_id,
-        user_session
-    ORDER BY truncated_event_time;
-    """
-    
-    cursor.execute(query)
-    results = cursor.fetchall()
-    
-    print("Results with GROUP BY (simulating PARTITION BY):")
-    print("---------------------------------------------------")
-    for row in results:
-        print(row)
-
-
 def remove_close_timestamp_duplicates(cursor, table_name):
     """
     DOCSTRING
     """
 
+    # revoir l'ordre des comparaisons, et etudier l'effet sur les performances
+
     query = f"""
+    EXPLAIN ANALYZE
     DELETE FROM {table_name} t1
     USING {table_name} t2
     WHERE 
@@ -314,10 +246,10 @@ def main() -> None:
             INDEX_COLUMN_NAME
         )
         
-        remove_close_timestamp_duplicates(
-            cursor,
-            "test_partition" if table == "t" else TABLE_NAME,
-        )
+        # remove_close_timestamp_duplicates(
+        #     cursor,
+        #     "test_partition" if table == "t" else TABLE_NAME,
+        # )
 
 
 
