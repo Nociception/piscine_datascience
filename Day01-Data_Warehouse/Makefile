@@ -39,6 +39,7 @@ update_py_files:
 	@bash -c '\
 		DIFF_EX01=0; \
 		DIFF_EX02=0; \
+		DIFF_EX03=0; \
 		if ! diff ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE) > /dev/null; then \
 			echo "Differences found in ex01 files. Updating..."; \
 			cp ex01/$(EX01_PYTHON_FILE) app/$(EX01_PYTHON_FILE); \
@@ -49,8 +50,13 @@ update_py_files:
 			cp ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE); \
 			DIFF_EX02=1; \
 		fi; \
-		echo "DIFF_EX01 = $$DIFF_EX01 ; DIFF_EX02 = $$DIFF_EX02"; \
-		if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ]; then \
+        if ! diff ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE) > /dev/null; then \
+			echo "Differences found in ex03 files. Updating..."; \
+			cp ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE); \
+			DIFF_EX03=1; \
+		fi; \
+		echo "DIFF_EX01 = $$DIFF_EX01 ; DIFF_EX02 = $$DIFF_EX02"; DIFF_EX03 = $$DIFF_EX03";\
+		if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ] || [ $$DIFF_EX03 -eq 1 ] ; then \
 			echo "Restarting Python container..."; \
 			docker kill $(PYTHON_CONTAINER_NAME); \
 			docker-compose up -d $(PYTHON_CONTAINER_NAME); \
@@ -58,8 +64,6 @@ update_py_files:
 		else \
 			echo "No differences found. No updates nor container restart needed."; \
 		fi'
-
-
 
 docker_checks:
 	docker ps
@@ -255,7 +259,7 @@ ex02: up
 
 
 ex03: up
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX03_PYTHON_FILE)
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
