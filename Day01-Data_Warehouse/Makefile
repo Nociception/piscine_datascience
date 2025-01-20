@@ -248,7 +248,7 @@ ex01: unzip up ex00-clean
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX01_PYTHON_FILE)
 
 
-ex02: up ex01
+ex02: up
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX02_PYTHON_FILE)
 
 
