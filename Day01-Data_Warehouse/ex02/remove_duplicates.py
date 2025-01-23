@@ -348,7 +348,7 @@ def main() -> None:
             TEST_TABLE_NAME
         )
 
-        table_target = "t"
+        table_target = "c"
 
         reorder_table_by_column(
             cursor,

@@ -22,8 +22,8 @@ EX02_PYTHON_FILE = remove_duplicates.py
 EX03_PYTHON_FILE = fusion.py
 
 
-.PHONY: up psql down env withoutpw manage_app_directory end fclean\
-		docker_checks postgres_container python_container update_py_files\
+.PHONY: up psql down env withoutpw manage_app_directory end fclean \
+		docker_checks postgres_container python_container update_py_files \
 		ex00 \
 		ex01-setup ex01-clean download unzip\
 		ex02 \
@@ -35,8 +35,8 @@ up: unzip env update_py_files
 	$(MAKE) docker_checks
 
 update_py_files:
-	@echo "Checking for differences in Python files..."
-	@bash -c '\
+	@echo "Checking for differences in Python files...";
+	@bash -c ' \
 		DIFF_EX01=0; \
 		DIFF_EX02=0; \
 		DIFF_EX03=0; \
@@ -50,12 +50,12 @@ update_py_files:
 			cp ex02/$(EX02_PYTHON_FILE) app/$(EX02_PYTHON_FILE); \
 			DIFF_EX02=1; \
 		fi; \
-        if ! diff ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE) > /dev/null; then \
+		if ! diff ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE) > /dev/null; then \
 			echo "Differences found in ex03 files. Updating..."; \
 			cp ex03/$(EX03_PYTHON_FILE) app/$(EX03_PYTHON_FILE); \
 			DIFF_EX03=1; \
 		fi; \
-		echo "DIFF_EX01 = $$DIFF_EX01 ; DIFF_EX02 = $$DIFF_EX02"; DIFF_EX03 = $$DIFF_EX03";\
+		echo "DIFF_EX01 = $$DIFF_EX01 ; DIFF_EX02 = $$DIFF_EX02; DIFF_EX03 = $$DIFF_EX03"; \
 		if [ $$DIFF_EX01 -eq 1 ] || [ $$DIFF_EX02 -eq 1 ] || [ $$DIFF_EX03 -eq 1 ] ; then \
 			echo "Restarting Python container..."; \
 			docker kill $(PYTHON_CONTAINER_NAME); \
