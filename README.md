@@ -30,52 +30,30 @@ Monitoring with EXPLAIN ANALYZE.
 ### ex03: fusion
 Update table's rows with another CSV which contains a common column with the original table.
 
-## Python - 2 - DataTable :
-### ex00: Load my Dataset
-Load a CSV into a pandas's dataframe.
-### ex01: draw my country
-Plot data from a specific line in a CSV with Matplotlib.
-### ex02: compare my country
-Plot two lines of a CSV on the same figure, with a specific data crop.
-### ex03: draw my year
-Merge two CSV to draw a scatter plot on specific common column.
-Modify the scale (logarithmic).
+## Python - 2 - Data Analyst : (still in progress)
+### ex00: American apple Pie
+### ex01: initial data exploration
+### ex02: My beautiful mustache
+### ex03: Highest Building
+### ex04: Elbow
+### ex05: Clustering
 
-This exercise lead to a mini self initiative "project":
-[log_vs_lin_scale_on_scatter](github.com/Nociception/log_vs_lin_scale_on_scatter).
+## Python - 3 - Datascientist Part 1
+### ex00: Histogram
+### ex01: Correlation
+### ex02: it’s raining cats no points!
+### ex03: standardization
+### ex04: Normalization
+### ex05: Split
 
-## Python - 3 - OOP : for "Object Oriented Programmation"
-As this piscine is available only after the 42's common core, I already have studied OOP with common core CPP modules.
-### ex00: GOT S1E9
-Abstract classes, abstract methods, inheritance.
-### ex01: GOT S1E7
-.super() method, magic methods (\_\_repr\_\_, \_\_str\_\_), classmethod.
-### ex02: Now it’s weird!
-Properties, Diamond inheritance in python.
-### ex03: Calculate my vector
-Operators override.
-### ex04: Calculate my dot product
-staticmethod
-
-## Python - 4 - DOD : for "Data Oriented Design"
-### ex00: Calculate my statistics
-Manage an unknown number of parameters with \*\*kwargs.
-### ex01: Outer_inner
-nonlocal python keyword usage, with a function defined inside a function.
-### ex02: my first decorating
-Building a decorator from scratch, with the nonlocal keyword, and a function, defined in a function, defined in a function.
-### ex03: data class
-Discover dataclass decorator.
-
----
-
-# Tests
-The subject provides minimal tests, and encourages us to write better ones.
-To do so, I tried to create a tester machine to avoid redundant code:
-- [general_function_tester.py](general_function_tester.py) for functions
-- [general_tester.py](general_tester.py) for programs
-
-Eventually, I prefered the pytest way.
+## Python - 4 - Datascientist Part 2
+### ex00: Confusion Matrix
+### ex01: It is warm
+### ex02: Variances
+### ex03: Feature Selection
+### ex04: Forest
+### ex05: KNN
+### ex06: democracy !
 
 ---
 
