@@ -320,14 +320,14 @@ def main() -> None:
     - adds an index column to the `table_target` table
     - removes duplicates with an one second time delta tolerance
 
-    Adjust the `table_target` variable to work whether on the `test` table,
+    Adjust the `table_target` variable to work whether on the `duplicates_deletion_table_test` table,
     or the `customers` table:
-    - 't' targets the `test` table
+    - 't' targets the `duplicates_deletion_table_test` table
     - something else targets the `customers` table
     """
 
     TABLE_NAME = "customers"
-    TEST_TABLE_NAME = "test"
+    TEST_TABLE_NAME = "duplicates_deletion_test"
     INDEX_COLUMN_NAME = "index"
 
     try:
@@ -348,7 +348,7 @@ def main() -> None:
             TEST_TABLE_NAME
         )
 
-        table_target = "c"
+        table_target = "t"
 
         reorder_table_by_column(
             cursor,

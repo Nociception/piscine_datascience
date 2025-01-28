@@ -166,7 +166,7 @@ def was_vacuumed(
 
     else:
         raise SystemError("SQL query did not produce any result.")
-    
+
 
 def vacuum_table(
     cursor:psycopg.Cursor,
