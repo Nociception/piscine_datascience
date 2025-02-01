@@ -1,9 +1,9 @@
 COMPOSE_FILE = docker-compose.yaml
-POSTGRES_CONTAINER_NAME = postgres_piscineds
-POSTGRES_RUN = docker exec -it $(POSTGRES_CONTAINER_NAME) psql -U nstoutze -d piscineds -h localhost
-PYTHON_CONTAINER_NAME = python
 DOCKER_EXEC = docker exec -it
-PSQL_COMMAND = psql -U nstoutze -d piscineds -c
+POSTGRES_CONTAINER_NAME = postgres_piscineds
+PSQL_OPTIONS = -U nstoutze -d piscineds -h localhost
+PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) psql $(PSQL_OPTIONS)
+PYTHON_CONTAINER_NAME = python
 EXAMPLE_TABLE_NAME = example_table
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
@@ -18,7 +18,7 @@ EX03_PYTHON_FILE = automatic_table.py
 EX04_PYTHON_FILE = items_table.py
 
 
-.PHONY: up psql down env withoutpw end fclean \
+.PHONY: up psql down env end fclean \
 		docker_checks postgres_container python_container \
 		ex00 \
 		ex01-setup ex01-clean \
@@ -31,6 +31,7 @@ up: env unzip
 	./$(SCRIPTS_DIR)/update_py_files.sh
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
+	$(MAKE) wait_for_postgres
 
 
 env:
@@ -57,6 +58,10 @@ docker_checks:
 	docker volume ls
 
 
+psql: wait_for_postgres
+	$(PSQL)
+
+
 postgres_container:
 	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) bash
 
@@ -65,13 +70,12 @@ python_container:
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) bash
 
 
-psql:
-	@echo "Waiting for PostgreSQL to be ready..."
+wait_for_postgres:
+	@echo "Checking if PostgreSQL is ready..."
 	@for i in {1..10}; do \
-		$(POSTGRES_RUN) -c "SELECT 1" > /dev/null 2>&1 && break || sleep 2; \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
 	done
 	@echo "PostgreSQL is ready!"
-	$(POSTGRES_RUN)
 
 
 down:
@@ -124,42 +128,13 @@ adminer:
 	@echo "   - Database: piscineds"
 
 
-withoutpw:
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) -U nstoutze -d piscineds -h localhost
-# Checks the pg_hba.conf file to know what method is used to authenticate during a db connection:
-# docker exec -it postgres_piscineds sh
-#	cat /var/lib/postgresql/data/pg_hba.conf
-
-
 ex00: up
-	@$(MAKE) psql
+	$(PSQL)
 
 
 ex01-setup: up
-	@echo "Waiting for PostgreSQL to be ready..."
-	@for i in {1..10}; do \
-		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "SELECT 1" && break || sleep 2; \
-	done
-#		Reminder : DOCKER_EXEC =$(POSTGRES_CONTAINER_NAME)  docker exec -it postgres_piscineds
-#			It then starts a session inside the postgres docker container.
-#			Everything next will be handled from the container.
-#			-U for specifying the user, -d the database
-#			-c for a command ; here "SELECT 1" :
-#				Asks the db to return 1, if it is available for.
-#				The result is not related to any table, data or existing structure.
-#				Mainly used to test server connection.
-#				The command can then lead to an error such as (most common ones):
-#					psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory
-#					FATAL: password authentication failed for user "nstoutze"
-#					FATAL: database "piscineds" does not exist
-#				If one of these occurs, the command part result into FALSE, and the break is not reached.
-#	About the $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) commands in a Makefile :
-#		Each of them are related to a specific session running as long as the command has still something to do.
-#		After a command running, the docker session is over.
-#		That is why it is possible to read many $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) calls in this Makefile.
-
 	@echo "Creating table $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
+	$(PSQL) -c "\
 	CREATE TABLE $(EXAMPLE_TABLE_NAME) ( \
 		event_time TIMESTAMP NOT NULL, \
 		event_type VARCHAR(50), \
@@ -173,7 +148,7 @@ ex01-setup: up
 	);"
 
 	@echo "Inserting data into $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
+	$(PSQL) -c "\
 	INSERT INTO $(EXAMPLE_TABLE_NAME) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) VALUES \
 	('2022-10-01 00:00:00', 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
 	('2022-10-01 00:00:03', 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
@@ -187,15 +162,15 @@ ex01-setup: up
 
 ex01-clean:
 	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
+	$(PSQL) -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
 
 
 ex02-import_data: up ex01-clean
 	@if [ -f $(SQL_FILE) ]; then \
 		echo "Copying SQL file to container..."; \
-		docker cp $(SQL_FILE) postgres_piscineds:/create_and_import.sql; \
+		cat $(SQL_FILE) | docker exec -i $(POSTGRES_CONTAINER_NAME) sh -c 'tee /create_and_import.sql > /dev/null'; \
 		echo "Executing SQL file to create table and import data..."; \
-		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) psql -U nstoutze -d piscineds -f /create_and_import.sql; \
+		docker exec -i $(POSTGRES_CONTAINER_NAME) psql $(PSQL_OPTIONS) -f /create_and_import.sql; \
 		echo "Table created and data imported successfully!"; \
 	else \
 		echo "Error: $(SQL_FILE) not found."; \
@@ -203,12 +178,12 @@ ex02-import_data: up ex01-clean
 #	-f is a psql option for running .sql files
 
 ex02-verify_data: up
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
+	$(PSQL) -c "\
 	SELECT COUNT(*) FROM data_2022_dec; \
 	SELECT * FROM data_2022_dec LIMIT 10;"
 
 ex02-clean: up
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "DROP TABLE IF EXISTS data_2022_dec;"
+	$(PSQL) -c "DROP TABLE IF EXISTS data_2022_dec;"
 	@$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) rm -f \
 		create_and_import.sql \
 		data_2022_dec.csv \
