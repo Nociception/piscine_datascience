@@ -49,7 +49,7 @@ down:
 	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down
 	$(MAKE) docker_checks
-	@printf "run this: docker volume rm $\(docker volume ls -q)\n"
+	@printf "\nrun this: docker volume rm $\(docker volume ls -q)\n"
 
 manage_app_directory:
 	@if [ -d $(APP_DIR_NAME) ]; then \
