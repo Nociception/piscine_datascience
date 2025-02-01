@@ -11,6 +11,8 @@ SUBJECT_DIRNAME = subject
 APP_DIR = app
 REQ_FILE = requirements.txt
 
+SCRIPTS_DIR = scripts
+
 SQL_FILE = ex02/table.sql
 CSV_FILE = subject/customer/data_2022_dec.csv
 CSV_CONTAINER_PATH = /data_2022_dec.csv
@@ -29,9 +31,27 @@ EX04_PYTHON_FILE = items_table.py
 		ex04 \
 
 up: env unzip
-	./update_py_files.sh
+	./$(SCRIPTS_DIR)/update_py_files.sh
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
+
+env:
+	@if [ -f .env ]; then \
+		echo ".env file already exists. Skipping creation."; \
+	else \
+		echo "Creating .env file..."; \
+		echo "POSTGRES_USER=nstoutze" > .env; \
+		echo "POSTGRES_PASSWORD=mysecretpassword" >> .env; \
+		echo "POSTGRES_DB=piscineds" >> .env; \
+		echo "POSTGRES_HOST=localhost" >> .env; \
+		echo "POSTGRES_PORT=5432" >> .env; \
+		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
+		echo "PYTHON_CONTAINER_NAME=python" >> .env; \
+		echo "APP_DIR=$(APP_DIR)" >> .env; \
+		echo "REQ_FILE=$(REQ_FILE)" >> .env; \
+		echo ".env file created successfully."; \
+	fi
+# Unable to make the makefile work with a heredoc.
 
 docker_checks:
 	docker ps
@@ -53,7 +73,7 @@ down:
 	@echo "run this: docker volume rm \$$(docker volume ls -q)"
 
 download:
-	./manage_app_directory.sh
+	./$(SCRIPTS_DIR)/manage_app_directory.sh
 
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
@@ -125,24 +145,6 @@ withoutpw:
 # Checks the pg_hba.conf file to know what method is used to authenticate during a db connection:
 # docker exec -it postgres_piscineds sh
 #	cat /var/lib/postgresql/data/pg_hba.conf
-
-env:
-	@if [ -f .env ]; then \
-		echo ".env file already exists. Skipping creation."; \
-	else \
-		echo "Creating .env file..."; \
-		echo "POSTGRES_USER=nstoutze" > .env; \
-		echo "POSTGRES_PASSWORD=mysecretpassword" >> .env; \
-		echo "POSTGRES_DB=piscineds" >> .env; \
-		echo "POSTGRES_HOST=localhost" >> .env; \
-		echo "POSTGRES_PORT=5432" >> .env; \
-		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
-		echo "PYTHON_CONTAINER_NAME=python" >> .env; \
-		echo "APP_DIR=$(APP_DIR)" >> .env; \
-		echo "REQ_FILE=$(REQ_FILE)" >> .env; \
-		echo ".env file created successfully."; \
-	fi
-# Unable to make the makefile work with a heredoc.
 
 
 ex00: up
