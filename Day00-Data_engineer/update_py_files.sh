@@ -36,8 +36,7 @@ update_py_files() {
         dest_file="app/$(basename "$source_file")"
 
         if file_differs "$source_file" "$dest_file"; then
-            printf "Processing: $source_file → Updating $dest_file\n"
-            cp "$source_file" "$dest_file" && echo "Copied: $source_file → $dest_file"
+            copy_file "$source_file" "$dest_file"
             diff_detected=1
         fi
     done

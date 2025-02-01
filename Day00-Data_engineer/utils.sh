@@ -27,3 +27,18 @@ file_differs() {
         return 1
     fi
 }
+
+copy_file() {
+    local source_file="$1"
+    local destination_file="$2"
+
+    printf "Processing: $source_file → Updating $destination_file\n"
+
+    if cp "$source_file" "$destination_file"; then
+        printf "Successfully copied: $source_file → $destination_file\n"
+        return 0
+    else
+        printf "Error: Fail to copy: $source_file → $destination_file\n"
+        return 1
+    fi
+}

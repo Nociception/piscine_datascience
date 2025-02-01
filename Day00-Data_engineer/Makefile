@@ -19,13 +19,13 @@ EX03_PYTHON_FILE = automatic_table.py
 EX04_PYTHON_FILE = items_table.py
 
 
-.PHONY: up psql down env withoutpw manage_app_directory end fclean\
-		docker_checks postgres_container python_container update_py_files\
+.PHONY: up psql down env withoutpw manage_app_directory end fclean \
+		docker_checks postgres_container python_container \
 		ex00 \
 		ex01-setup ex01-clean \
 		download unzip ex02-import_data ex02-verify_data ex02-clean \
 		ex03 \
-		ex04
+		ex04 \
 
 up: unzip env
 	./update_py_files.sh
@@ -49,7 +49,7 @@ down:
 	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down
 	$(MAKE) docker_checks
-#	docker volume rm $(docker volume ls -q)
+	@printf "run this: docker volume rm $\(docker volume ls -q)\n"
 
 manage_app_directory:
 	@if [ -d $(APP_DIR_NAME) ]; then \
