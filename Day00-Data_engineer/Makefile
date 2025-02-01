@@ -1,6 +1,6 @@
 COMPOSE_FILE = docker-compose.yaml
-POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
 POSTGRES_CONTAINER_NAME = postgres_piscineds
+POSTGRES_RUN = docker exec -it $(POSTGRES_CONTAINER_NAME) psql -U nstoutze -d piscineds -h localhost
 PYTHON_CONTAINER_NAME = python
 DOCKER_EXEC = docker exec -it
 PSQL_COMMAND = psql -U nstoutze -d piscineds -c
@@ -66,6 +66,11 @@ python_container:
 
 
 psql:
+	@echo "Waiting for PostgreSQL to be ready..."
+	@for i in {1..10}; do \
+		$(POSTGRES_RUN) -c "SELECT 1" > /dev/null 2>&1 && break || sleep 2; \
+	done
+	@echo "PostgreSQL is ready!"
 	$(POSTGRES_RUN)
 
 
@@ -73,7 +78,7 @@ down:
 	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down
 	$(MAKE) docker_checks
-	@echo "run this: docker volume rm \$$(docker volume ls -q)"
+	@echo "\nrun this: docker volume rm \$$(docker volume ls -q)"
 
 
 download:
