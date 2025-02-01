@@ -1,4 +1,4 @@
-# add the subject for each exercise
+# TODO add the subject for each exercise
 
 COMPOSE_FILE = docker-compose.yaml
 POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
