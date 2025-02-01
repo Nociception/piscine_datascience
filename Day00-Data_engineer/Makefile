@@ -1,3 +1,5 @@
+#	Reutiliser copy_update_file_if_needed dans update_file.sh
+
 COMPOSE_FILE = docker-compose.yaml
 POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
 POSTGRES_CONTAINER_NAME = postgres_piscineds
@@ -8,7 +10,8 @@ EXAMPLE_TABLE_NAME = example_table
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
-APP_DIR_NAME = app
+APP_DIR = app
+REQ_FILE = requirements.txt
 
 SQL_FILE = ex02/table.sql
 CSV_FILE = subject/customer/data_2022_dec.csv
@@ -19,7 +22,7 @@ EX03_PYTHON_FILE = automatic_table.py
 EX04_PYTHON_FILE = items_table.py
 
 
-.PHONY: up psql down env withoutpw manage_app_directory end fclean \
+.PHONY: up psql down env withoutpw end fclean \
 		docker_checks postgres_container python_container \
 		ex00 \
 		ex01-setup ex01-clean \
@@ -27,7 +30,7 @@ EX04_PYTHON_FILE = items_table.py
 		ex03 \
 		ex04 \
 
-up: unzip env
+up: env unzip
 	./update_py_files.sh
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
@@ -51,35 +54,9 @@ down:
 	$(MAKE) docker_checks
 	@printf "\nrun this: docker volume rm $\(docker volume ls -q)\n"
 
-manage_app_directory:
-	@if [ -d $(APP_DIR_NAME) ]; then \
-		echo "$(APP_DIR_NAME) already exists. Skipping creation."; \
-	else \
-		mkdir app ; \
-	fi
+download:
+	./manage_app_directory.sh
 
-	@if [ -f $(APP_DIR_NAME)/$(EX03_PYTHON_FILE) ]; then \
-		echo "$(EX03_PYTHON_FILE) already in $(APP_DIR_NAME); skipping copy."; \
-	else \
-		cp ex03/$(EX03_PYTHON_FILE) $(APP_DIR_NAME)/ ; \
-		echo "ex03/$(EX03_PYTHON_FILE) copied into the $(APP_DIR_NAME) directory."; \
-	fi
-
-	@if [ -f $(APP_DIR_NAME)/$(EX04_PYTHON_FILE) ]; then \
-		echo "$(EX04_PYTHON_FILE) already in $(APP_DIR_NAME); skipping copy."; \
-	else \
-		cp ex04/$(EX04_PYTHON_FILE) $(APP_DIR_NAME)/ ; \
-		echo "ex04/$(EX04_PYTHON_FILE) copied into the $(APP_DIR_NAME) directory."; \
-	fi
-
-	@if [ -f $(APP_DIR_NAME)/requirements.txt ]; then \
-		echo "requirements.txt already in $(APP_DIR_NAME); skipping copy."; \
-	else \
-		cp requirements.txt $(APP_DIR_NAME)/ ; \
-		echo "requirements.txt copied into the $(APP_DIR_NAME) directory."; \
-	fi
-
-download: manage_app_directory
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
 	else \
@@ -163,6 +140,8 @@ env:
 		echo "POSTGRES_PORT=5432" >> .env; \
 		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
 		echo "PYTHON_CONTAINER_NAME=python" >> .env; \
+		echo "APP_DIR=$(APP_DIR)" >> .env; \
+		echo "REQ_FILE=$(REQ_FILE)" >> .env; \
 		echo ".env file created successfully."; \
 	fi
 # Unable to make the makefile work with a heredoc.

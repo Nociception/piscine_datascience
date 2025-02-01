@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o allexport
+source .env 2>/dev/null || echo "Warning: .env file not found"
+set +o allexport
+
 source "$(dirname "$0")/utils.sh"
 
 
@@ -33,7 +37,7 @@ update_py_files() {
     printf "\n\nChecking for differences in Python files...\n"
 
     for source_file in "${python_files[@]}"; do
-        dest_file="app/$(basename "$source_file")"
+        dest_file=""$APP_DIR"/$(basename "$source_file")"
 
         if file_differs "$source_file" "$dest_file"; then
             copy_file "$source_file" "$dest_file"

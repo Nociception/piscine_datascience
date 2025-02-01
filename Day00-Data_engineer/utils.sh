@@ -42,3 +42,26 @@ copy_file() {
         return 1
     fi
 }
+
+make_directory() {
+    local dir="$1"
+    if [ -d "$dir" ]; then
+        printf "\nDirectory '%s' already exists. Skipping creation.\n\n" "$dir"
+    else
+        mkdir "$dir"
+        printf "\nDirectory '%s' created.\n\n" "$dir"
+    fi
+}
+
+copy_update_file_if_needed() {
+    local source="$1"
+    local destination="$2"
+
+    if [ ! -f "$destination" ] || file_differs "$source" "$destination"; then
+        printf "\nCopying %s → %s\n" "$source" "$destination\n"
+        cp "$source" "$destination"
+        printf "Copied: %s → %s\n" "$source" "$destination\n\n"
+    else
+        printf "Skipping copy: %s (already up to date)\n" "$destination\n\n"
+    fi
+}
