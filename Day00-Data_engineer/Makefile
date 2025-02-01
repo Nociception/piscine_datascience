@@ -10,15 +10,11 @@ OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
 APP_DIR = app
 REQ_FILE = requirements.txt
-
 SCRIPTS_DIR = scripts
-
 SQL_FILE = ex02/table.sql
 CSV_FILE = subject/customer/data_2022_dec.csv
 CSV_CONTAINER_PATH = /data_2022_dec.csv
-
 EX03_PYTHON_FILE = automatic_table.py
-
 EX04_PYTHON_FILE = items_table.py
 
 
@@ -30,10 +26,12 @@ EX04_PYTHON_FILE = items_table.py
 		ex03 \
 		ex04 \
 
+
 up: env unzip
 	./$(SCRIPTS_DIR)/update_py_files.sh
 	docker-compose -f $(COMPOSE_FILE) up -d
 	$(MAKE) docker_checks
+
 
 env:
 	@if [ -f .env ]; then \
@@ -53,24 +51,30 @@ env:
 	fi
 # Unable to make the makefile work with a heredoc.
 
+
 docker_checks:
 	docker ps
 	docker volume ls
 
+
 postgres_container:
 	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) bash
+
 
 python_container:
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) bash
 
+
 psql:
 	$(POSTGRES_RUN)
+
 
 down:
 	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down
 	$(MAKE) docker_checks
 	@echo "run this: docker volume rm \$$(docker volume ls -q)"
+
 
 download:
 	./$(SCRIPTS_DIR)/manage_app_directory.sh
@@ -84,6 +88,7 @@ download:
 	fi
 #	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
 
+
 unzip: download
 	@if [ -d $(SUBJECT_DIRNAME) ]; then \
 		echo "Directory $(SUBJECT_DIRNAME) already exists. Skipping extraction."; \
@@ -95,40 +100,13 @@ unzip: download
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
 
+
 fclean:
-	@if [ -d $(SUBJECT_DIRNAME) ]; then \
-		rm -rf $(SUBJECT_DIRNAME); \
-		echo "$(SUBJECT_DIRNAME) directory deleted."; \
-	else \
-		echo "$(SUBJECT_DIRNAME) directory does not exist."; \
-	fi
-
-	@if [ -f $(OUTPUT_ZIP) ]; then \
-		rm -rf $(OUTPUT_ZIP); \
-		echo "$(OUTPUT_ZIP) file deleted."; \
-	else \
-		echo "$(OUTPUT_ZIP) file does not exist."; \
-	fi
-
-	@if [ -d $(APP_DIR_NAME) ]; then \
-		rm -rf $(APP_DIR_NAME); \
-		echo "$(APP_DIR_NAME) directory deleted."; \
-	else \
-		echo "$(APP_DIR_NAME) directory does not exist."; \
-	fi
-
-	docker-compose -f $(COMPOSE_FILE) down --volumes
-
-	@if [ -f .env ]; then \
-		rm .env; \
-		echo ".env file deleted."; \
-	else \
-		echo ".env file does not exist."; \
-	fi
-
+	rm -rf $(SUBJECT_DIRNAME) $(OUTPUT_ZIP) $(APP_DIR_NAME) .env || true
 
 
 end: down fclean
+
 
 adminer:
 	@echo "\nTo use Adminer, follow these steps:"
@@ -139,6 +117,7 @@ adminer:
 	@echo "   - Username: nstoutze"
 	@echo "   - Password: mysecretpassword"
 	@echo "   - Database: piscineds"
+
 
 withoutpw:
 	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) -U nstoutze -d piscineds -h localhost
@@ -216,8 +195,7 @@ ex02-import_data: up ex01-clean
 	else \
 		echo "Error: $(SQL_FILE) not found."; \
 	fi
-
-# -f is a psql option for running .sql files
+#	-f is a psql option for running .sql files
 
 ex02-verify_data: up
 	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) $(PSQL_COMMAND) "\
@@ -233,15 +211,15 @@ ex02-clean: up
 
 
 ex03: up ex02-clean
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX03_PYTHON_FILE)
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /$(APP_DIR)/$(EX03_PYTHON_FILE)
+
 
 ex04: up
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /app/$(EX04_PYTHON_FILE)
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /$(APP_DIR)/$(EX04_PYTHON_FILE)
+
 
 #BIG CLEAN
 # docker stop $(docker ps -aq)
 # docker rm -f $(docker ps -aq)
 # docker volume rm $(docker volume ls -q)
 # docker rmi -f $(docker images -aq)
-# docker ps -a
-# docker volume ls
