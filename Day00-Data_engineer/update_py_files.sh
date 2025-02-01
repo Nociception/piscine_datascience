@@ -1,9 +1,5 @@
 #!/bin/bash
 
-set -o allexport
-source .env 2>/dev/null || echo "Warning: .env file not found"
-set +o allexport
-
 source "$(dirname "$0")/utils.sh"
 
 
@@ -23,29 +19,7 @@ restart_python_container_if_needed() {
 }
 
 
-update_py_files() {
-    local diff_detected=0
-    python_files=()
-
-    mapfile -d '' python_files < <(find ex*/ -type f -name "*.py" -print0)
-
-    if [ ${#python_files[@]} -eq 0 ]; then
-        printf "\n\nNo Python files found in ex*/ directories.\n"
-        return 0
-    fi
-
-    printf "\n\nChecking for differences in Python files...\n"
-
-    for source_file in "${python_files[@]}"; do
-        dest_file=""$APP_DIR"/$(basename "$source_file")"
-
-        if file_differs "$source_file" "$dest_file"; then
-            copy_file "$source_file" "$dest_file"
-            diff_detected=1
-        fi
-    done
-
-    restart_python_container_if_needed "$diff_detected"
-}
-
-update_py_files
+sync_python_files_to_app > /dev/null 2>&1
+sync_result=$?
+sync_result=$(echo "$sync_result" | tr -d '[:space:]')
+restart_python_container_if_needed "$sync_result"

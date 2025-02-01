@@ -1,5 +1,3 @@
-#	Reutiliser copy_update_file_if_needed dans update_file.sh
-
 COMPOSE_FILE = docker-compose.yaml
 POSTGRES_RUN = docker exec -it postgres_piscineds psql -U nstoutze -d piscineds -h localhost
 POSTGRES_CONTAINER_NAME = postgres_piscineds
@@ -52,7 +50,7 @@ down:
 	docker kill $(PYTHON_CONTAINER_NAME)
 	docker-compose -f $(COMPOSE_FILE) down
 	$(MAKE) docker_checks
-	@printf "\nrun this: docker volume rm $\(docker volume ls -q)\n"
+	@echo "run this: docker volume rm \$$(docker volume ls -q)"
 
 download:
 	./manage_app_directory.sh
