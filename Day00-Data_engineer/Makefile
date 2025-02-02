@@ -1,10 +1,14 @@
+#TODO
+# write a docstring for this makefile
+# check if the variable commented are necessary
+
 COMPOSE_FILE = docker-compose.yaml
 DOCKER_EXEC = docker exec -it
 POSTGRES_CONTAINER_NAME = postgres_piscineds
 PSQL_OPTIONS = -U nstoutze -d piscineds -h localhost
 PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) psql $(PSQL_OPTIONS)
 PYTHON_CONTAINER_NAME = python
-EXAMPLE_TABLE_NAME = example_table
+EXAMPLE_TABLE = example_table
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
 SUBJECT_DIRNAME = subject
@@ -12,8 +16,8 @@ APP_DIR = app
 REQ_FILE = requirements.txt
 SCRIPTS_DIR = scripts
 SQL_FILE = ex02/table.sql
-CSV_FILE = subject/customer/data_2022_dec.csv
-CSV_CONTAINER_PATH = /data_2022_dec.csv
+# CSV_FILE = subject/customer/data_2022_dec.csv
+# CSV_CONTAINER_PATH = /data_2022_dec.csv
 EX03_PYTHON_FILE = automatic_table.py
 EX04_PYTHON_FILE = items_table.py
 
@@ -76,6 +80,13 @@ wait_for_postgres:
 		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
 	done
 	@echo "PostgreSQL is ready!"
+# pg_isready is postgresql tool which allows to connect to psql without authentication
+# in order to retrieve availability information
+# (useful to avoid to get error because of a too soon connection attempt).
+# Return to the shell:
+# - 0 : connection accepted
+# - 1 : connection refused
+# - 0 : no response from the psql server
 
 
 down:
@@ -133,9 +144,9 @@ ex00: up
 
 
 ex01-setup: up
-	@echo "Creating table $(EXAMPLE_TABLE_NAME)..."
+	@echo "Creating table $(EXAMPLE_TABLE)..."
 	$(PSQL) -c "\
-	CREATE TABLE $(EXAMPLE_TABLE_NAME) ( \
+	CREATE TABLE IF NOT EXISTS $(EXAMPLE_TABLE) ( \
 		event_time TIMESTAMP NOT NULL, \
 		event_type VARCHAR(50), \
 		product_id BIGINT, \
@@ -147,22 +158,22 @@ ex01-setup: up
 		user_session VARCHAR(255) \
 	);"
 
-	@echo "Inserting data into $(EXAMPLE_TABLE_NAME)..."
+	@echo "Inserting data into $(EXAMPLE_TABLE)..."
 	$(PSQL) -c "\
-	INSERT INTO $(EXAMPLE_TABLE_NAME) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) VALUES \
+	INSERT INTO $(EXAMPLE_TABLE) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) VALUES \
 	('2022-10-01 00:00:00', 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
 	('2022-10-01 00:00:03', 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
 	('2022-10-01 00:00:07', 'cart', 5723490, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
 	('2022-10-01 00:00:07', 'cart', 5881589, 215119107051219712, NULL, 'lovely', 13.48, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
 	('2022-10-01 00:00:15', 'cart', 5881449, 148758000513522845952, NULL, 'lovely', 0.56, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
 	('2022-10-01 00:00:16', 'cart', 5857269, 1487580005134238464, NULL, 'runail', 2.62, 430174032, '73dea1e7-664e-43f4-8b30-d32b9d5af04f');"
-	@echo "Table $(EXAMPLE_TABLE_NAME) created and populated successfully!"
+	@echo "Table $(EXAMPLE_TABLE) created and populated successfully!"
 
 	@$(MAKE) adminer
 
 ex01-clean:
-	@echo "Dropping table $(EXAMPLE_TABLE_NAME)..."
-	$(PSQL) -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE_NAME);"
+	@echo "Dropping table $(EXAMPLE_TABLE)..."
+	$(PSQL) -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE);"
 
 
 ex02-import_data: up ex01-clean
