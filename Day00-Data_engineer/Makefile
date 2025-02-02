@@ -1,6 +1,7 @@
 #TODO
 # write a docstring for this makefile
 # check if the variable commented are necessary
+# color log messages
 
 COMPOSE_FILE = docker-compose.yaml
 DOCKER_EXEC = docker exec -it
