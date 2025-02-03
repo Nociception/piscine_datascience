@@ -10,5 +10,3 @@ RUN chmod +x /docker-entrypoint-initdb.d/init_pg_hba.sh
 # This directory docker-entrypoint-initdb.d is used to
 # customize how the container is started.
 # Any file .sql .sh or .sql.gz is run automatically
-
-

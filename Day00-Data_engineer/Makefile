@@ -5,8 +5,8 @@
 # protect the ex against double call makefile rule
 # factor all python files
 # check every commands in the day00
-# write a sh file for the env, and ask the user to write his password
 # write a sh file for adminer rule
+# reorganize variable and env variables
 
 
 DC_COMPOSE = docker-compose.yaml
@@ -30,6 +30,9 @@ SCRIPTS_DIR = scripts
 SETUP_LOG_TABLE = setup_log_table.py
 CHECK_LOG_TABLE = check_log_table.py
 LOGS_TABLE = logs
+EX01_SQL = ex01.sql
+EX01_SQL_HOST = $(SCRIPTS_DIR)/$(EX01_SQL)
+EX01_SQL_CONTAINER = ex01/$(EX01_SQL)
 EX02_SQL = ex02/table.sql
 EX03_PY = automatic_table.py
 EX04_PY = items_table.py
@@ -74,6 +77,9 @@ env:
 		echo "ADMINER_CONTAINER=$(ADMINER_CONTAINER)" >> .env; \
 		echo "ADMINER_PORT=8080" >> .env; \
 		echo "DC_NETWORK=network" >> .env; \
+		echo "EX01_SQL=$(EX01_SQL)" >> .env; \
+		echo "EX01_SQL_HOST=$(EX01_SQL_HOST)" >> .env; \
+		echo "EX01_SQL_CONTAINER=$(EX01_SQL_CONTAINER)" >> .env; \
 		echo ".env file created successfully."; \
 	fi
 # Unable to make the makefile work with a heredoc.
@@ -166,47 +172,50 @@ adminer:
 	@echo "   - Database: piscineds"
 
 
-ex00: up
-	$(PSQL)
+ex00: up psql
 
 
 ex01-setup: up
-	@echo "Creating table $(EXAMPLE_TABLE)..."
-	$(PSQL) -c "\
-	CREATE TABLE IF NOT EXISTS $(EXAMPLE_TABLE) ( \
-		event_time TIMESTAMP NOT NULL, \
-		event_type VARCHAR(50), \
-		product_id BIGINT, \
-		category_id NUMERIC, \
-		category_code VARCHAR(255), \
-		brand VARCHAR(255), \
-		price NUMERIC(10, 2), \
-		user_id BIGINT, \
-		user_session VARCHAR(255) \
-	);"
 
-	$(DOCKER_PYTHON) $(CHECK_LOG_TABLE) $(EXAMPLE_TABLE)
+	$(PSQL) -f /ex01/ex01.sql;
 
-	@echo "Inserting data into $(EXAMPLE_TABLE) if empty..."
-	$(PSQL) -c "\
-	INSERT INTO $(EXAMPLE_TABLE) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) \
-	SELECT * FROM ( \
-	    VALUES \
-	    ('2022-10-01 00:00:00'::TIMESTAMP, 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
-	    ('2022-10-01 00:00:03'::TIMESTAMP, 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
-	    ('2022-10-01 00:00:07'::TIMESTAMP, 'cart', 5723490, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
-	    ('2022-10-01 00:00:07'::TIMESTAMP, 'cart', 5881589, 215119107051219712, NULL, 'lovely', 13.48, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
-	    ('2022-10-01 00:00:15'::TIMESTAMP, 'cart', 5881449, 148758000513522845952, NULL, 'lovely', 0.56, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
-	    ('2022-10-01 00:00:16'::TIMESTAMP, 'cart', 5857269, 1487580005134238464, NULL, 'runail', 2.62, 430174032, '73dea1e7-664e-43f4-8b30-d32b9d5af04f') \
-	) AS new_data \
-	WHERE NOT EXISTS (SELECT 1 FROM $(EXAMPLE_TABLE))";
 
-	@echo "Logging insertion into table logs..."
-	$(PSQL) -c "\
-	BEGIN; \
-	INSERT INTO logs (table_name, last_import) VALUES ('$(EXAMPLE_TABLE)', NOW()) \
-	ON CONFLICT (table_name) DO UPDATE SET last_import = NOW(); \
-	COMMIT;"
+# 	@echo "Creating table $(EXAMPLE_TABLE)..."
+# 	$(PSQL) -c "\
+# 	CREATE TABLE IF NOT EXISTS $(EXAMPLE_TABLE) ( \
+# 		event_time TIMESTAMP NOT NULL, \
+# 		event_type VARCHAR(50), \
+# 		product_id BIGINT, \
+# 		category_id NUMERIC, \
+# 		category_code VARCHAR(255), \
+# 		brand VARCHAR(255), \
+# 		price NUMERIC(10, 2), \
+# 		user_id BIGINT, \
+# 		user_session VARCHAR(255) \
+# 	);"
+
+# 	$(DOCKER_PYTHON) $(CHECK_LOG_TABLE) $(EXAMPLE_TABLE)
+
+# 	@echo "Inserting data into $(EXAMPLE_TABLE) if empty..."
+# 	$(PSQL) -c "\
+# 	INSERT INTO $(EXAMPLE_TABLE) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) \
+# 	SELECT * FROM ( \
+# 	    VALUES \
+# 	    ('2022-10-01 00:00:00'::TIMESTAMP, 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
+# 	    ('2022-10-01 00:00:03'::TIMESTAMP, 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
+# 	    ('2022-10-01 00:00:07'::TIMESTAMP, 'cart', 5723490, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
+# 	    ('2022-10-01 00:00:07'::TIMESTAMP, 'cart', 5881589, 215119107051219712, NULL, 'lovely', 13.48, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
+# 	    ('2022-10-01 00:00:15'::TIMESTAMP, 'cart', 5881449, 148758000513522845952, NULL, 'lovely', 0.56, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
+# 	    ('2022-10-01 00:00:16'::TIMESTAMP, 'cart', 5857269, 1487580005134238464, NULL, 'runail', 2.62, 430174032, '73dea1e7-664e-43f4-8b30-d32b9d5af04f') \
+# 	) AS new_data \
+# 	WHERE NOT EXISTS (SELECT 1 FROM $(EXAMPLE_TABLE))";
+
+# 	@echo "Logging insertion into table logs..."
+# 	$(PSQL) -c "\
+# 	BEGIN; \
+# 	INSERT INTO logs (table_name, last_import) VALUES ('$(EXAMPLE_TABLE)', NOW()) \
+# 	ON CONFLICT (table_name) DO UPDATE SET last_import = NOW(); \
+# 	COMMIT;"
 
 	@$(MAKE) adminer
 
@@ -220,7 +229,7 @@ ex02-import_data: up
 		echo "Copying SQL file to container..."; \
 		cat $(EX02_SQL) | docker exec -i $(POSTGRES_CONTAINER) sh -c 'cat > /create_and_import.sql'; \
 		echo "Executing SQL file to create table and import data..."; \
-		docker exec -i $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS) -f /create_and_import.sql; \
+		$(PSQL) -f /create_and_import.sql; \
 		echo "Table created and data imported successfully!"; \
 	else \
 		echo "Error: $(EX02_SQL) not found."; \
@@ -236,10 +245,6 @@ ex02-verify_data: up
 
 ex02-clean: up
 	$(PSQL) -c "DROP TABLE IF EXISTS data_2022_dec;"
-	@$(DOCKER_EXEC) $(POSTGRES_CONTAINER) rm -f \
-		create_and_import.sql \
-		data_2022_dec.csv \
-		|| echo "Files already removed or not found."
 
 
 ex03: up ex02-clean
