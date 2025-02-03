@@ -1,30 +1,41 @@
 #TODO
 # write a docstring for this makefile
-# check if commented variables are necessary
+# write the help rule
 # color log messages
 # protect the ex against double call makefile rule
+# factor all python files
+# check every commands in the day00
+# write a sh file for the env, and ask the user to write his password
+# write a sh file for adminer rule
 
-COMPOSE_FILE = docker-compose.yaml
+
+DC_COMPOSE = docker-compose.yaml
+DOWN_SH = down.sh
+RM_VOLUMES_SH = rm_volumes.sh
 DOCKER_EXEC = docker exec -it
-POSTGRES_CONTAINER_NAME = postgres_piscineds
+POSTGRES_CONTAINER = postgres_piscineds
 PSQL_OPTIONS = -U nstoutze -d piscineds -h localhost
-PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) psql $(PSQL_OPTIONS)
-PYTHON_CONTAINER_NAME = python
+PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
+PYTHON_CONTAINER = python
+ADMINER_CONTAINER = adminer
+UPDATE_PY_FILES = update_py_files.sh
+DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 EXAMPLE_TABLE = example_table
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
-SUBJECT_DIRNAME = subject
+SUBJECT_DIR = subject
 APP_DIR = app
-REQ_FILE = requirements.txt
+REQ = requirements.txt
 SCRIPTS_DIR = scripts
-SQL_FILE = ex02/table.sql
-# CSV_FILE = subject/customer/data_2022_dec.csv
-# CSV_CONTAINER_PATH = /data_2022_dec.csv
-EX03_PYTHON_FILE = automatic_table.py
-EX04_PYTHON_FILE = items_table.py
+SETUP_LOG_TABLE = setup_log_table.py
+CHECK_LOG_TABLE = check_log_table.py
+LOGS_TABLE = logs
+EX02_SQL = ex02/table.sql
+EX03_PY = automatic_table.py
+EX04_PY = items_table.py
 
 
-.PHONY: up psql down env end fclean \
+.PHONY: up psql down rm_volumes env end fclean \
 		docker_checks postgres_container python_container \
 		ex00 \
 		ex01-setup ex01-clean \
@@ -34,10 +45,11 @@ EX04_PYTHON_FILE = items_table.py
 
 
 up: env unzip
-	./$(SCRIPTS_DIR)/update_py_files.sh
-	docker-compose -f $(COMPOSE_FILE) up -d
+	./$(SCRIPTS_DIR)/$(UPDATE_PY_FILES)
+	docker-compose -f $(DC_COMPOSE) up -d
 	$(MAKE) docker_checks
 	$(MAKE) wait_for_postgres
+	$(DOCKER_PYTHON) $(SETUP_LOG_TABLE)
 
 
 env:
@@ -50,10 +62,18 @@ env:
 		echo "POSTGRES_DB=piscineds" >> .env; \
 		echo "POSTGRES_HOST=localhost" >> .env; \
 		echo "POSTGRES_PORT=5432" >> .env; \
-		echo "POSTGRES_CONTAINER_NAME=postgres_piscineds" >> .env; \
-		echo "PYTHON_CONTAINER_NAME=python" >> .env; \
+		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
+		echo "PYTHON_DOCKERFILE=Dockerfile_python" >> .env; \
+		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
+		echo "PYTHON_CONTAINER=$(PYTHON_CONTAINER)" >> .env; \
+		echo "SUBJECT_DIR=$(SUBJECT_DIR)" >> .env; \
+		echo "DATA_VOLUME=data" >> .env; \
 		echo "APP_DIR=$(APP_DIR)" >> .env; \
-		echo "REQ_FILE=$(REQ_FILE)" >> .env; \
+		echo "REQ=$(REQ)" >> .env; \
+		echo "LOGS_TABLE=$(LOGS_TABLE)" >> .env; \
+		echo "ADMINER_CONTAINER=$(ADMINER_CONTAINER)" >> .env; \
+		echo "ADMINER_PORT=8080" >> .env; \
+		echo "DC_NETWORK=network" >> .env; \
 		echo ".env file created successfully."; \
 	fi
 # Unable to make the makefile work with a heredoc.
@@ -69,17 +89,17 @@ psql: wait_for_postgres
 
 
 postgres_container:
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) bash
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) bash
 
 
 python_container:
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) bash
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER) bash
 
 
 wait_for_postgres:
 	@echo "Checking if PostgreSQL is ready..."
 	@for i in {1..10}; do \
-		$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
 	done
 	@echo "PostgreSQL is ready!"
 # pg_isready is postgresql tool which allows to connect to psql without authentication
@@ -92,10 +112,14 @@ wait_for_postgres:
 
 
 down:
-	docker kill $(PYTHON_CONTAINER_NAME)
-	docker-compose -f $(COMPOSE_FILE) down
+	./$(SCRIPTS_DIR)/$(DOWN_SH)
 	$(MAKE) docker_checks
-	@echo "\nrun this: docker volume rm \$$(docker volume ls -q)"
+# Also deletes volumes.
+# Comment the line in the file to keep them.
+
+
+rm_volumes:
+	./$(SCRIPTS_DIR)/$(RM_VOLUMES_SH)
 
 
 download:
@@ -112,19 +136,20 @@ download:
 
 
 unzip: download
-	@if [ -d $(SUBJECT_DIRNAME) ]; then \
-		echo "Directory $(SUBJECT_DIRNAME) already exists. Skipping extraction."; \
+	@if [ -d $(SUBJECT_DIR) ]; then \
+		echo "Directory $(SUBJECT_DIR) already exists. Skipping extraction."; \
 	elif [ -f $(OUTPUT_ZIP) ]; then \
 		echo "Extracting $(OUTPUT_ZIP)..."; \
 		unzip -o $(OUTPUT_ZIP); \
-		echo "Extraction complete: files are in $(SUBJECT_DIRNAME)/"; \
+		echo "Extraction complete: files are in $(SUBJECT_DIR)/"; \
 	else \
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
 
 
 fclean:
-	rm -rf $(SUBJECT_DIRNAME) $(OUTPUT_ZIP) $(APP_DIR_NAME) .env || true
+	rm -rf $(SUBJECT_DIR) $(OUTPUT_ZIP) $(APP_DIR_NAME) .env || true
+	$(MAKE) rm_volumes
 
 
 end: down fclean
@@ -160,6 +185,8 @@ ex01-setup: up
 		user_session VARCHAR(255) \
 	);"
 
+	$(DOCKER_PYTHON) $(CHECK_LOG_TABLE) $(EXAMPLE_TABLE)
+
 	@echo "Inserting data into $(EXAMPLE_TABLE) if empty..."
 	$(PSQL) -c "\
 	INSERT INTO $(EXAMPLE_TABLE) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) \
@@ -172,7 +199,14 @@ ex01-setup: up
 	    ('2022-10-01 00:00:15'::TIMESTAMP, 'cart', 5881449, 148758000513522845952, NULL, 'lovely', 0.56, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
 	    ('2022-10-01 00:00:16'::TIMESTAMP, 'cart', 5857269, 1487580005134238464, NULL, 'runail', 2.62, 430174032, '73dea1e7-664e-43f4-8b30-d32b9d5af04f') \
 	) AS new_data \
-	WHERE NOT EXISTS (SELECT 1 FROM $(EXAMPLE_TABLE));"
+	WHERE NOT EXISTS (SELECT 1 FROM $(EXAMPLE_TABLE))";
+
+	@echo "Logging insertion into table logs..."
+	$(PSQL) -c "\
+	BEGIN; \
+	INSERT INTO logs (table_name, last_import) VALUES ('$(EXAMPLE_TABLE)', NOW()) \
+	ON CONFLICT (table_name) DO UPDATE SET last_import = NOW(); \
+	COMMIT;"
 
 	@$(MAKE) adminer
 
@@ -181,16 +215,18 @@ ex01-clean:
 	$(PSQL) -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE);"
 
 
-ex02-import_data: up ex01-clean
-	@if [ -f $(SQL_FILE) ]; then \
+ex02-import_data: up
+	@if [ -f $(EX02_SQL) ]; then \
 		echo "Copying SQL file to container..."; \
-		cat $(SQL_FILE) | docker exec -i $(POSTGRES_CONTAINER_NAME) sh -c 'tee /create_and_import.sql > /dev/null'; \
+		cat $(EX02_SQL) | docker exec -i $(POSTGRES_CONTAINER) sh -c 'cat > /create_and_import.sql'; \
 		echo "Executing SQL file to create table and import data..."; \
-		docker exec -i $(POSTGRES_CONTAINER_NAME) psql $(PSQL_OPTIONS) -f /create_and_import.sql; \
+		docker exec -i $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS) -f /create_and_import.sql; \
 		echo "Table created and data imported successfully!"; \
 	else \
-		echo "Error: $(SQL_FILE) not found."; \
+		echo "Error: $(EX02_SQL) not found."; \
 	fi
+#	tee could have been necessary in during the copy into the container,
+#	instead of cat (the second one), to avoid errors ; however, cat works well.
 #	-f is a psql option for running .sql files
 
 ex02-verify_data: up
@@ -200,18 +236,18 @@ ex02-verify_data: up
 
 ex02-clean: up
 	$(PSQL) -c "DROP TABLE IF EXISTS data_2022_dec;"
-	@$(DOCKER_EXEC) $(POSTGRES_CONTAINER_NAME) rm -f \
+	@$(DOCKER_EXEC) $(POSTGRES_CONTAINER) rm -f \
 		create_and_import.sql \
 		data_2022_dec.csv \
 		|| echo "Files already removed or not found."
 
 
 ex03: up ex02-clean
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /$(APP_DIR)/$(EX03_PYTHON_FILE)
+	$(DOCKER_PYTHON) /$(APP_DIR)/$(EX03_PY)
 
 
 ex04: up
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER_NAME) python3 /$(APP_DIR)/$(EX04_PYTHON_FILE)
+	$(DOCKER_PYTHON) /$(APP_DIR)/$(EX04_PY)
 
 
 #BIG CLEAN

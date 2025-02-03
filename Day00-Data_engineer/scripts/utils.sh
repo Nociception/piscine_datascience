@@ -80,13 +80,13 @@ copy_update_file_if_needed() {
 }
 
 
-retrieve_all_ex_py_files() {
+retrieve_all_py_files() {
     args_number_exact_check $# 1 || return 1
 
     local -n result_array="$1"
     result_array=()
 
-    mapfile -d '' result_array < <(find ex*/ -type f -name "*.py" -print0)
+    mapfile -d '' result_array < <(find ex*/ scripts/ -type f -name "*.py" -print0)
 
     if [ ${#result_array[@]} -eq 0 ]; then
         printf "\n\nNo Python files found in ex*/ directories.\n"
@@ -100,7 +100,7 @@ sync_python_files_to_app() {
     local diff_detected=0
     local python_files=()
 
-    retrieve_all_ex_py_files python_files
+    retrieve_all_py_files python_files
 
     if [ ${#python_files[@]} -eq 0 ]; then
         printf "\nNo Python files found in ex*/ directories.\n"

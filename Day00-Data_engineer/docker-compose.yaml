@@ -1,12 +1,18 @@
+# env_file key is manually added in each service.
+# It seems that docker-compose automatic .env file works
+# with a cache file, which leads to .env updates fail.
+
 services:
 
   postgres:
+    env_file:
+      - .env
     build:
       context: .
       # Allows the build process to find any file involved in a COPY,
       # or similar commands.
-      dockerfile: Dockerfile_postgres
-    container_name: ${POSTGRES_CONTAINER_NAME}
+      dockerfile: ${POSTGRES_DOCKERFILE}
+    container_name: ${POSTGRES_CONTAINER}
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     environment:
@@ -14,26 +20,30 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - ./subject:/data
+      - ./${SUBJECT_DIR}:/${DATA_VOLUME}
     networks:
-      - network
+      - ${DC_NETWORK}
   
   adminer:
+    env_file:
+      - .env
     image: adminer:latest
-    container_name: adminer
+    container_name: ${ADMINER_CONTAINER}
     ports:
-      - "8080:8080"
+      - "${ADMINER_PORT}:${ADMINER_PORT}"
     networks:
-      - network
+      - ${DC_NETWORK}
 
   python:
+    env_file:
+      - .env
     build:
       context: .
-      dockerfile: Dockerfile_python
-    container_name: python
+      dockerfile: ${PYTHON_DOCKERFILE}
+    container_name: ${PYTHON_CONTAINER}
     volumes:
-      - ./subject:/data
-      - ./app:/app
+      - ./${SUBJECT_DIR}:/${DATA_VOLUME}
+      - ./${APP_DIR}:/${APP_DIR}
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -41,7 +51,7 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: ${POSTGRES_PORT}
     networks:
-      - network
+      - ${DC_NETWORK}
     command: ["bash"]
     tty: true
 
