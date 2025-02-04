@@ -12,6 +12,11 @@ services:
       # Allows the build process to find any file involved in a COPY,
       # or similar commands.
       dockerfile: ${POSTGRES_DOCKERFILE}
+      args:
+        SCRIPTS_DIR: ${SCRIPTS_DIR}
+        POSTGRES_CONTAINER: ${POSTGRES_CONTAINER}
+        PG_HBA_CONF: ${PG_HBA_CONF}
+        INIT_PG_HBA_SH: ${INIT_PG_HBA_SH}
     container_name: ${POSTGRES_CONTAINER}
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
@@ -19,11 +24,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      SCRIPTS_DIR: ${SCRIPTS_DIR}
+      PYTHON_CONTAINER: ${PYTHON_CONTAINER}
+      REQUIREMENTS: ${REQUIREMENTS}
     volumes:
       - ./${SUBJECT_DIR}:/${DATA_VOLUME}
       - ./${EX01_SQL_HOST}:/${EX01_SQL_CONTAINER}
     networks:
-      - ${DC_NETWORK}
+      - ${DOCKER_NETWORK}
   
   adminer:
     env_file:
@@ -33,7 +41,7 @@ services:
     ports:
       - "${ADMINER_PORT}:${ADMINER_PORT}"
     networks:
-      - ${DC_NETWORK}
+      - ${DOCKER_NETWORK}
 
   python:
     env_file:
@@ -41,18 +49,25 @@ services:
     build:
       context: .
       dockerfile: ${PYTHON_DOCKERFILE}
+      args:
+        PYTHON_APP_DIR: ${PYTHON_APP_DIR}
+        REQUIREMENTS: ${REQUIREMENTS}
+        SCRIPTS_DIR: ${SCRIPTS_DIR}
+        PYTHON_CONTAINER: ${PYTHON_CONTAINER}
     container_name: ${PYTHON_CONTAINER}
     volumes:
       - ./${SUBJECT_DIR}:/${DATA_VOLUME}
-      - ./${APP_DIR}:/${APP_DIR}
+      - ./${SCRIPTS_DIR}/${PYTHON_CONTAINER}:/${PYTHON_APP_DIR}/${SCRIPTS_DIR}
+      - ./${EX03_DIR}:/${PYTHON_APP_DIR}/${EX03_DIR}
+      - ./${EX04_DIR}:/${PYTHON_APP_DIR}/${EX04_DIR}
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
+      POSTGRES_HOST: ${POSTGRES_CONTAINER}
       POSTGRES_PORT: ${POSTGRES_PORT}
     networks:
-      - ${DC_NETWORK}
+      - ${DOCKER_NETWORK}
     command: ["bash"]
     tty: true
 

@@ -6,36 +6,53 @@
 # factor all python files
 # check every commands in the day00
 # write a sh file for adminer rule
-# reorganize variable and env variables
+# write a makefile rule: build (for docker containers from an updated image)
+# use the .pgpass solution
+# reactivate the logs table in the up makefile rule
+# clean commented lines in the code
+# clean most of the sh files in the scripts/makefile/ directory
 
 
-DC_COMPOSE = docker-compose.yaml
-DOWN_SH = down.sh
-RM_VOLUMES_SH = rm_volumes.sh
-DOCKER_EXEC = docker exec -it
-POSTGRES_CONTAINER = postgres_piscineds
-PSQL_OPTIONS = -U nstoutze -d piscineds -h localhost
-PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
-PYTHON_CONTAINER = python
-ADMINER_CONTAINER = adminer
-UPDATE_PY_FILES = update_py_files.sh
-DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
-EXAMPLE_TABLE = example_table
+# Makefile
+#  Files
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
-SUBJECT_DIR = subject
-APP_DIR = app
-REQ = requirements.txt
-SCRIPTS_DIR = scripts
 SETUP_LOG_TABLE = setup_log_table.py
 CHECK_LOG_TABLE = check_log_table.py
+#  Directories
+SUBJECT_DIR = subject
+SCRIPTS_DIR = scripts
+MAKEFILE_DIR = makefile
+#  Exercices
 LOGS_TABLE = logs
+EXAMPLE_TABLE = example_table
 EX01_SQL = ex01.sql
 EX01_SQL_HOST = $(SCRIPTS_DIR)/$(EX01_SQL)
 EX01_SQL_CONTAINER = ex01/$(EX01_SQL)
 EX02_SQL = ex02/table.sql
+EX03_DIR = ex03
 EX03_PY = automatic_table.py
+EX04_DIR = ex04
 EX04_PY = items_table.py
+
+# Docker
+#  Containers' name
+POSTGRES_CONTAINER = postgres
+PYTHON_CONTAINER = python
+ADMINER_CONTAINER = adminer
+#  Files
+DC_COMPOSE = docker-compose.yaml
+DOWN_SH = down.sh
+UPDATE_PY_FILES = update_py_files.sh
+REQUIREMENTS = requirements.txt
+#  Directories
+PYTHON_APP_DIR = app
+#  Commands
+DOCKER_EXEC = docker exec -it
+RM_VOLUMES_SH = rm_volumes.sh
+PSQL_OPTIONS = -U nstoutze -d piscineds -h localhost
+PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
+DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
 
 .PHONY: up psql down rm_volumes env end fclean \
@@ -48,11 +65,11 @@ EX04_PY = items_table.py
 
 
 up: env unzip
-	./$(SCRIPTS_DIR)/$(UPDATE_PY_FILES)
+#	./$(SCRIPTS_DIR)/$(UPDATE_PY_FILES)
 	docker-compose -f $(DC_COMPOSE) up -d
 	$(MAKE) docker_checks
 	$(MAKE) wait_for_postgres
-	$(DOCKER_PYTHON) $(SETUP_LOG_TABLE)
+#	$(DOCKER_PYTHON) $(SETUP_LOG_TABLE)
 
 
 env:
@@ -60,29 +77,46 @@ env:
 		echo ".env file already exists. Skipping creation."; \
 	else \
 		echo "Creating .env file..."; \
-		echo "POSTGRES_USER=nstoutze" > .env; \
-		echo "POSTGRES_PASSWORD=mysecretpassword" >> .env; \
-		echo "POSTGRES_DB=piscineds" >> .env; \
-		echo "POSTGRES_HOST=localhost" >> .env; \
-		echo "POSTGRES_PORT=5432" >> .env; \
-		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
-		echo "PYTHON_DOCKERFILE=Dockerfile_python" >> .env; \
-		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
-		echo "PYTHON_CONTAINER=$(PYTHON_CONTAINER)" >> .env; \
+		echo "# Makefile" >> .env; \
+		echo "#" >> .env; \
+		echo "#  Directories" >> .env; \
 		echo "SUBJECT_DIR=$(SUBJECT_DIR)" >> .env; \
-		echo "DATA_VOLUME=data" >> .env; \
-		echo "APP_DIR=$(APP_DIR)" >> .env; \
-		echo "REQ=$(REQ)" >> .env; \
-		echo "LOGS_TABLE=$(LOGS_TABLE)" >> .env; \
+		echo "SCRIPTS_DIR=$(SCRIPTS_DIR)" >> .env; \
+		echo "EX03_DIR=$(EX03_DIR)" >> .env; \
+		echo "EX04_DIR=$(EX04_DIR)" >> .env; \
+		echo "#" >> .env; \
+		echo "#" >> .env; \
+		echo "# Docker" >> .env; \
+		echo "#" >> .env; \
+		echo "#  Containers' infos" >> .env; \
 		echo "ADMINER_CONTAINER=$(ADMINER_CONTAINER)" >> .env; \
 		echo "ADMINER_PORT=8080" >> .env; \
-		echo "DC_NETWORK=network" >> .env; \
-		echo "EX01_SQL=$(EX01_SQL)" >> .env; \
+		echo "DATA_VOLUME=data" >> .env; \
+		echo "DOCKER_NETWORK=network" >> .env; \
+		echo "LOGS_TABLE=$(LOGS_TABLE)" >> .env; \
+		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
+		echo "POSTGRES_DB=piscineds" >> .env; \
+		echo "POSTGRES_HOST=localhost" >> .env; \
+		echo "POSTGRES_PASSWORD=mysecretpassword" >> .env; \
+		echo "POSTGRES_PORT=5432" >> .env; \
+		echo "POSTGRES_USER=nstoutze" >> .env; \
+		echo "PYTHON_CONTAINER=$(PYTHON_CONTAINER)" >> .env; \
+		echo "PYTHON_DOCKERFILE=Dockerfile_python" >> .env; \
+		echo "#" >> .env; \
+		echo "#  Files" >> .env; \
 		echo "EX01_SQL_HOST=$(EX01_SQL_HOST)" >> .env; \
 		echo "EX01_SQL_CONTAINER=$(EX01_SQL_CONTAINER)" >> .env; \
+		echo "EX01_SQL=$(EX01_SQL)" >> .env; \
+		echo "INIT_PG_HBA_SH=init_pg_hba.sh" >> .env; \
+		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
+		echo "PG_HBA_CONF=pg_hba.conf" >> .env; \
+		echo "REQUIREMENTS=$(REQUIREMENTS)" >> .env; \
+		echo "#" >> .env; \
+		echo "#  Directories" >> .env; \
+		echo "PYTHON_APP_DIR=$(PYTHON_APP_DIR)" >> .env; \
+		echo "#" >> .env; \
 		echo ".env file created successfully."; \
 	fi
-# Unable to make the makefile work with a heredoc.
 
 
 docker_checks:
@@ -125,11 +159,11 @@ down:
 
 
 rm_volumes:
-	./$(SCRIPTS_DIR)/$(RM_VOLUMES_SH)
+	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(RM_VOLUMES_SH)
 
 
 download:
-	./$(SCRIPTS_DIR)/manage_app_directory.sh
+#	./$(SCRIPTS_DIR)/manage_app_directory.sh
 
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
