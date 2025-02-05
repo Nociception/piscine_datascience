@@ -1,12 +1,11 @@
-import psycopg
+from psycopg_connection_handler import psycopg_connection_handler
 
+@psycopg_connection_handler(log_action=True)
 def create_table_if_not_exists(
-    cursor: psycopg.Cursor,
     table_name: str,
     headers: list[str],
     column_types: list[str],
-    logs_table: bool=False
-) -> None:
+) -> str:
     """
     Create a table (if it does not exist) in PostgreSQL,
     according to the args.
@@ -24,8 +23,4 @@ def create_table_if_not_exists(
     print(f"create_table_query: {create_table_query}")
     print()
     
-    print(f"Creating table {table_name} with columns: {headers}")
-    cursor.execute(create_table_query)
-
-    if logs_table:
-        pass
+    return create_table_query

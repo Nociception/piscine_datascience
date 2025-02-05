@@ -1,8 +1,7 @@
-import psycopg
+from psycopg_connection_handler import psycopg_connection_handler
 
-
+@psycopg_connection_handler(log_action=True)
 def import_csv_to_table(
-    cursor: psycopg.Cursor,
     table_name: str,
     csv_path: str
 ) -> None:
@@ -13,4 +12,4 @@ def import_csv_to_table(
     DELIMITER ',' CSV HEADER;
     """
     print(f"Importing data from {csv_path} into {table_name}...")
-    cursor.execute(copy_query)
+    return copy_query

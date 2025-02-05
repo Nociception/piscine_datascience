@@ -13,6 +13,7 @@
 # flake8
 # secure data volume, in case of a deletion attempt
 # check again every python function DOCSTRING
+# check invalid option -W (it should be there, but it currently leads to an error)
 
 # Makefile
 #  Files
@@ -43,6 +44,7 @@ POSTGRES_DB = piscineds
 POSTGRES_HOST = localhost
 POSTGRES_PORT = 5432
 ADMINER_SYSTEM = PostgreSQL
+ADMINER_PORT = 8080
 DOCKER_NETWORK = network
 #  Containers' name
 POSTGRES_CONTAINER = postgres
@@ -59,7 +61,7 @@ PYTHON_APP_DIR = app
 #  Commands
 DOCKER_EXEC = docker exec -it
 RM_VOLUMES_SH = rm_volumes.sh
-PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) -W  # With or without -W, pw is required
+PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST)
 PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
 DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
@@ -77,11 +79,15 @@ up: env unzip
 	docker-compose -f $(DC_COMPOSE) up -d
 	$(MAKE) docker_checks
 	$(MAKE) wait_for_postgres
-#	$(DOCKER_PYTHON) $(SETUP_LOG_TABLE)
+	$(DOCKER_PYTHON) $(SCRIPTS_DIR)/$(SETUP_LOG_TABLE)
 
 	@printf "\nReminder: if a Dockerfile has been modified, \
 	you must stop, rebuild and up it.\n \
 	make rebuild_image SERVICE=<service_name>\n\n"; \
+
+
+test:
+	$(DOCKER_PYTHON) $(SCRIPTS_DIR)/$(SETUP_LOG_TABLE)
 
 
 rebuild_image:
