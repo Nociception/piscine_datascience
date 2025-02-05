@@ -1,23 +1,9 @@
 import os
-import psycopg
 from pathlib import Path
 from get_psycopg_connection import get_psycopg_connection
 from create_table_if_not_exists import create_table_if_not_exists
-
-
-def import_csv_to_table(
-    cursor: psycopg.Cursor,
-    table_name: str,
-    csv_path: str
-) -> None:
-    """Imports a CSV file into a PostgreSQL table."""
-
-    copy_query = f"""
-    COPY {table_name} FROM '{csv_path}'
-    DELIMITER ',' CSV HEADER;
-    """
-    print(f"Importing data from {csv_path} into {table_name}...")
-    cursor.execute(copy_query)
+from import_csv_to_table import import_csv_to_table
+from get_all_csv_in_dir import get_all_csv_in_dir
 
 
 def main():
@@ -27,6 +13,7 @@ def main():
     """
 
     CONTAINER_CSV_DIR = "/data/item"
+    csv_dir = Path(CONTAINER_CSV_DIR).resolve()
     column_types = [
         "INT",
         "BIGINT",
@@ -35,26 +22,11 @@ def main():
     ]
 
     try:
-        csv_dir = Path(CONTAINER_CSV_DIR).resolve()
-        assert csv_dir.exists(), (
-            f"ERROR: CSV directory not found at {csv_dir}"
-        )
-        print(f"CSV directory resolved to: {csv_dir}")
-
-        csv_files = [
-            file.name for file in csv_dir.iterdir()
-            if file.is_file() and file.suffix == ".csv"
-        ]
-        if not csv_files:
-            print("No CSV files found in the CSV directory.")
-            return
-        print(f"CSV files found: {csv_files}")
-
         connection = get_psycopg_connection()
         cursor = connection.cursor()
         print("Connected to the database successfully.")
 
-        for csv_file in csv_files:
+        for csv_file in get_all_csv_in_dir(csv_dir):
             table_name = os.path.splitext(csv_file)[0]
             csv_path = os.path.join(CONTAINER_CSV_DIR, csv_file)
 
@@ -72,7 +44,11 @@ def main():
                 headers,
                 column_types
             )
-            import_csv_to_table(cursor, table_name, csv_path)
+            import_csv_to_table(
+                cursor,
+                table_name,
+                csv_path
+            )
 
         connection.commit()
         print("All CSV files have been imported successfully.")
