@@ -5,3 +5,4 @@ data_2023_feb.csv
 app/
 prochain_prompt.txt
 test.py
+*__pycache__*

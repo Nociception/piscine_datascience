@@ -1,16 +1,16 @@
 #TODO
-# write a docstring for this makefile
-# write the help rule
-# color log messages
 # protect the ex against double call makefile rule
-# factor all python files
 # check every commands in the day00
 # write a sh file for adminer rule
 # write a makefile rule: build (for docker containers from an updated image)
-# use the .pgpass solution
 # reactivate the logs table in the up makefile rule
 # clean commented lines in the code
 # clean most of the sh files in the scripts/makefile/ directory
+# write a docstring for this makefile
+# write the help rule
+# color log messages
+# factor all python files
+# flake8
 
 
 # Makefile
@@ -56,7 +56,7 @@ DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
 
 .PHONY: up psql down rm_volumes env end fclean \
-		docker_checks postgres_container python_container \
+		docker_checks postgres_container python_container rebuild_image\
 		ex00 \
 		ex01-setup ex01-clean \
 		download unzip ex02-import_data ex02-verify_data ex02-clean \
@@ -65,11 +65,16 @@ DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
 
 up: env unzip
-#	./$(SCRIPTS_DIR)/$(UPDATE_PY_FILES)
 	docker-compose -f $(DC_COMPOSE) up -d
 	$(MAKE) docker_checks
 	$(MAKE) wait_for_postgres
 #	$(DOCKER_PYTHON) $(SETUP_LOG_TABLE)
+
+	@printf "\nReminder: if a Dockerfile has been modified, \
+	you must stop, rebuild and up it.\n \
+	docker-compose stop <service_name>\n \
+	docker-compose build <service_name>\n \
+	docker-compose up -d <service_name>\n\n"
 
 
 env:
@@ -120,8 +125,11 @@ env:
 
 
 docker_checks:
+	@printf "\n"
 	docker ps
+	@printf "\n"
 	docker volume ls
+	@printf "\n"
 
 
 psql: wait_for_postgres
@@ -152,7 +160,7 @@ wait_for_postgres:
 
 
 down:
-	./$(SCRIPTS_DIR)/$(DOWN_SH)
+	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(DOWN_SH)
 	$(MAKE) docker_checks
 # Also deletes volumes.
 # Comment the line in the file to keep them.
@@ -282,11 +290,11 @@ ex02-clean: up
 
 
 ex03: up ex02-clean
-	$(DOCKER_PYTHON) /$(APP_DIR)/$(EX03_PY)
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX03_DIR)/$(EX03_PY)
 
 
 ex04: up
-	$(DOCKER_PYTHON) /$(APP_DIR)/$(EX04_PY)
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX04_DIR)/$(EX04_PY)
 
 
 #BIG CLEAN

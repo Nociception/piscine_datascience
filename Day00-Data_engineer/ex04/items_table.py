@@ -1,25 +1,7 @@
 import os
 import psycopg
 from pathlib import Path
-
-
-def get_env_variables() -> dict[str, str]:
-    """Returns the .env variables in a dictionary."""
-
-    env_variables = {
-        "postgres_user": os.getenv("POSTGRES_USER"),
-        "postgres_password": os.getenv("POSTGRES_PASSWORD"),
-        "postgres_db": os.getenv("POSTGRES_DB"),
-        "postgres_host": os.getenv("POSTGRES_HOST"),
-        "postgres_port": os.getenv("POSTGRES_PORT"),
-    }
-    print(env_variables)
-    assert all(env_variables.values()), (
-        f"ERROR: Missing one or more environment variables.\n"
-        f"env_variables:\n{env_variables}"
-    )
-
-    return env_variables
+from get_psycopg_connection import get_psycopg_connection
 
 
 def create_table(
@@ -75,8 +57,6 @@ def main():
     CONTAINER_CSV_DIR = "/data/item"
 
     try:
-        env_variables = get_env_variables()
-
         csv_dir = Path(CONTAINER_CSV_DIR).resolve()
         assert csv_dir.exists(), (
             f"ERROR: CSV directory not found at {csv_dir}"
@@ -92,13 +72,7 @@ def main():
             return
         print(f"CSV files found: {csv_files}")
 
-        connection = psycopg.connect(
-            user=env_variables["postgres_user"],
-            password=env_variables["postgres_password"],
-            dbname=env_variables["postgres_db"],
-            host=env_variables["postgres_host"],
-            port=env_variables["postgres_port"],
-        )
+        connection = get_psycopg_connection()
         cursor = connection.cursor()
         print("Connected to the database successfully.")
 

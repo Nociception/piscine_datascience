@@ -31,7 +31,8 @@ def create_import_log_table(
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {logs_table_name} (
         table_name TEXT PRIMARY KEY,
-        last_import TIMESTAMP DEFAULT now()
+        last_modification TIMESTAMP DEFAULT now(),
+        modification_type VARCHAR(50)
     );
     """
     print(f"Ensuring the '{logs_table_name}' table exists...")
