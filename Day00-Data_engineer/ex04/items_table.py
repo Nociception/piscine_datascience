@@ -2,35 +2,7 @@ import os
 import psycopg
 from pathlib import Path
 from get_psycopg_connection import get_psycopg_connection
-
-
-def create_table(
-    cursor: psycopg.Cursor,
-    table_name: str,
-    headers: list[str]
-) -> None:
-    """Create a table in PostgreSQL based on CSV headers."""
-
-    column_types = [
-        "INT",
-        "BIGINT",
-        "VARCHAR(50)",
-        "VARCHAR(50)"
-    ]
-    columns = ", ".join(
-        f"{header} {column_type}"
-        for header, column_type in zip(headers, column_types)
-    )
-    print(f"columns: {columns}")
-
-    create_table_query = f"""
-    CREATE TABLE IF NOT EXISTS {table_name} ({columns});
-    """
-    print(f"create_table_query: {create_table_query}")
-    print()
-    
-    print(f"Creating table {table_name} with columns: {headers}")
-    cursor.execute(create_table_query)
+from create_table_if_not_exists import create_table_if_not_exists
 
 
 def import_csv_to_table(
@@ -55,6 +27,12 @@ def main():
     """
 
     CONTAINER_CSV_DIR = "/data/item"
+    column_types = [
+        "INT",
+        "BIGINT",
+        "VARCHAR(50)",
+        "VARCHAR(50)"
+    ]
 
     try:
         csv_dir = Path(CONTAINER_CSV_DIR).resolve()
@@ -88,7 +66,12 @@ def main():
                 headers = file.readline().strip().split(",")
                 print(f"Headers for {csv_file}: {headers}")
 
-            create_table(cursor, table_name, headers)
+            create_table_if_not_exists(
+                cursor,
+                table_name,
+                headers,
+                column_types
+            )
             import_csv_to_table(cursor, table_name, csv_path)
 
         connection.commit()

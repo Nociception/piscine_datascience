@@ -4,6 +4,8 @@
 # write a sh file for adminer rule
 # write a makefile rule: build (for docker containers from an updated image)
 # reactivate the logs table in the up makefile rule
+# enable the log argument in the py functions
+
 # clean commented lines in the code
 # clean most of the sh files in the scripts/makefile/ directory
 # write a docstring for this makefile
@@ -11,7 +13,8 @@
 # color log messages
 # factor all python files
 # flake8
-
+# secure data volume, in case of a deletion attempt
+# check again every python function docstring
 
 # Makefile
 #  Files

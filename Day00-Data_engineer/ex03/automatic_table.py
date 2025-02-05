@@ -25,18 +25,12 @@ def get_env_variables() -> dict[str, str]:
 def create_table(
     cursor: psycopg.Cursor,
     table_name: str,
-    headers: list[str]
+    headers: list[str],
+    column_types: list[str],
+    logs_table: bool=False
 ) -> None:
     """Create a table in PostgreSQL based on CSV headers."""
 
-    column_types = [
-        "TIMESTAMP WITH TIME ZONE",
-        "VARCHAR(50)",
-        "INT",
-        "NUMERIC(10, 2)",
-        "BIGINT",
-        "UUID"
-    ]
     columns = ", ".join(
         f"{header} {column_type}"
         for header, column_type in zip(headers, column_types)
@@ -51,6 +45,9 @@ def create_table(
     
     print(f"Creating table {table_name} with columns: {headers}")
     cursor.execute(create_table_query)
+
+    if logs_table:
+        pass
 
 
 def import_csv_to_table(
@@ -75,6 +72,14 @@ def main():
     """
 
     CONTAINER_CSV_DIR = "/data/customer"
+    column_types = [
+        "TIMESTAMP WITH TIME ZONE",
+        "VARCHAR(50)",
+        "INT",
+        "NUMERIC(10, 2)",
+        "BIGINT",
+        "UUID"
+    ]
 
     try:
         env_variables = get_env_variables()
@@ -116,7 +121,12 @@ def main():
                 headers = file.readline().strip().split(",")
                 print(f"Headers for {csv_file}: {headers}")
 
-            create_table(cursor, table_name, headers)
+            create_table(
+                cursor,
+                table_name,
+                headers,
+                column_types
+            )
             import_csv_to_table(cursor, table_name, csv_path)
 
         connection.commit()
