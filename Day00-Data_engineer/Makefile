@@ -1,14 +1,11 @@
 #TODO
-# protect the ex against double call makefile rule
-# check every commands in the day00
-# write a sh file for adminer rule
-# write a makefile rule: build (for docker containers from an updated image)
 # reactivate the logs table in the up makefile rule
 # enable the log argument in the py functions
-# password typing
+# protect the ex against double call makefile rule
+# check every commands in the day00
 
 # clean commented lines in the code
-# clean most of the sh files in the scripts/makefile/ directory
+# check useless/ghost makefile variable
 # write a docstring for this makefile
 # write the help rule
 # color log messages
@@ -21,8 +18,7 @@
 #  Files
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
-SETUP_LOG_TABLE = setup_log_table.py
-CHECK_LOG_TABLE = check_log_table.py
+ADMINER_SH = adminer.sh
 #  Directories
 SUBJECT_DIR = subject
 SCRIPTS_DIR = scripts
@@ -40,22 +36,30 @@ EX04_DIR = ex04
 EX04_PY = items_table.py
 
 # Docker
-#  Containers' name
+#  Infos
 POSTGRES_PASSWORD = mysecretpassword
+POSTGRES_USER = nstoutze
+POSTGRES_DB = piscineds
+POSTGRES_HOST = localhost
+POSTGRES_PORT = 5432
+ADMINER_SYSTEM = PostgreSQL
+DOCKER_NETWORK = network
+#  Containers' name
 POSTGRES_CONTAINER = postgres
 PYTHON_CONTAINER = python
 ADMINER_CONTAINER = adminer
 #  Files
 DC_COMPOSE = docker-compose.yaml
 DOWN_SH = down.sh
-UPDATE_PY_FILES = update_py_files.sh
 REQUIREMENTS = requirements.txt
+SETUP_LOG_TABLE = setup_log_table.py
+CHECK_LOG_TABLE = check_log_table.py
 #  Directories
 PYTHON_APP_DIR = app
 #  Commands
 DOCKER_EXEC = docker exec -it
 RM_VOLUMES_SH = rm_volumes.sh
-PSQL_OPTIONS = -U nstoutze -d piscineds -h localhost
+PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) -W  # With or without -W, pw is required
 PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
 DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
@@ -116,16 +120,17 @@ env:
 		echo "#" >> .env; \
 		echo "#  Containers' infos" >> .env; \
 		echo "ADMINER_CONTAINER=$(ADMINER_CONTAINER)" >> .env; \
-		echo "ADMINER_PORT=8080" >> .env; \
+		echo "ADMINER_PORT=$(ADMINER_PORT)" >> .env; \
+		echo "ADMINER_SYSTEM=$(ADMINER_SYSTEM)" >> .env; \
 		echo "DATA_VOLUME=data" >> .env; \
-		echo "DOCKER_NETWORK=network" >> .env; \
+		echo "DOCKER_NETWORK=$(DOCKER_NETWORK)" >> .env; \
 		echo "LOGS_TABLE=$(LOGS_TABLE)" >> .env; \
 		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
-		echo "POSTGRES_DB=piscineds" >> .env; \
-		echo "POSTGRES_HOST=localhost" >> .env; \
+		echo "POSTGRES_DB=$(POSTGRES_DB)" >> .env; \
+		echo "POSTGRES_HOST=$(POSTGRES_HOST)" >> .env; \
 		echo "POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)" >> .env; \
-		echo "POSTGRES_PORT=5432" >> .env; \
-		echo "POSTGRES_USER=nstoutze" >> .env; \
+		echo "POSTGRES_PORT=$(POSTGRES_PORT)" >> .env; \
+		echo "POSTGRES_USER=$(POSTGRES_USER)" >> .env; \
 		echo "PYTHON_CONTAINER=$(PYTHON_CONTAINER)" >> .env; \
 		echo "PYTHON_DOCKERFILE=Dockerfile_python" >> .env; \
 		echo "#" >> .env; \
@@ -190,8 +195,6 @@ rm_volumes:
 
 
 download:
-#	./$(SCRIPTS_DIR)/manage_app_directory.sh
-
 	@if [ -f $(OUTPUT_ZIP) ]; then \
 		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
 	else \
@@ -223,14 +226,7 @@ end: down fclean
 
 
 adminer:
-	@echo "\nTo use Adminer, follow these steps:"
-	@echo "1. Open your browser and go to: http://localhost:8080"
-	@echo "2. Fill in the following connection details:"
-	@echo "   - System: PostgreSQL"
-	@echo "   - Server: postgres"
-	@echo "   - Username: nstoutze"
-	@echo "   - Password: mysecretpassword"
-	@echo "   - Database: piscineds"
+	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(ADMINER_SH)
 
 
 ex00: up psql
