@@ -72,9 +72,25 @@ up: env unzip
 
 	@printf "\nReminder: if a Dockerfile has been modified, \
 	you must stop, rebuild and up it.\n \
-	docker-compose stop <service_name>\n \
-	docker-compose build <service_name>\n \
-	docker-compose up -d <service_name>\n\n"
+	make rebuild_image SERVICE=<service_name>\n"; \
+
+
+rebuild_image:
+	@if [ -z "$(SERVICE)" ]; then \
+		printf "ERROR: No service name provided!\n \
+		Usage: make rebuild_image SERVICE=<service_name>\n"; \
+		exit 1; \
+	fi
+
+	@if [ "$(SERVICE)" = "$(PYTHON_CONTAINER)" ]; then \
+		docker-compose kill $(PYTHON_CONTAINER); \
+	else \
+		docker-compose stop $(SERVICE); \
+	fi
+
+	docker-compose build $(SERVICE)
+	docker-compose up -d $(SERVICE)
+	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
 
 
 env:
