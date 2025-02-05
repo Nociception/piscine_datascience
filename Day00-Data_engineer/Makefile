@@ -5,6 +5,7 @@
 # write a makefile rule: build (for docker containers from an updated image)
 # reactivate the logs table in the up makefile rule
 # enable the log argument in the py functions
+# password typing
 
 # clean commented lines in the code
 # clean most of the sh files in the scripts/makefile/ directory
@@ -14,7 +15,7 @@
 # factor all python files
 # flake8
 # secure data volume, in case of a deletion attempt
-# check again every python function docstring
+# check again every python function DOCSTRING
 
 # Makefile
 #  Files
@@ -40,6 +41,7 @@ EX04_PY = items_table.py
 
 # Docker
 #  Containers' name
+POSTGRES_PASSWORD = mysecretpassword
 POSTGRES_CONTAINER = postgres
 PYTHON_CONTAINER = python
 ADMINER_CONTAINER = adminer
@@ -75,7 +77,7 @@ up: env unzip
 
 	@printf "\nReminder: if a Dockerfile has been modified, \
 	you must stop, rebuild and up it.\n \
-	make rebuild_image SERVICE=<service_name>\n"; \
+	make rebuild_image SERVICE=<service_name>\n\n"; \
 
 
 rebuild_image:
@@ -121,7 +123,7 @@ env:
 		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
 		echo "POSTGRES_DB=piscineds" >> .env; \
 		echo "POSTGRES_HOST=localhost" >> .env; \
-		echo "POSTGRES_PASSWORD=mysecretpassword" >> .env; \
+		echo "POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)" >> .env; \
 		echo "POSTGRES_PORT=5432" >> .env; \
 		echo "POSTGRES_USER=nstoutze" >> .env; \
 		echo "PYTHON_CONTAINER=$(PYTHON_CONTAINER)" >> .env; \
@@ -168,7 +170,7 @@ wait_for_postgres:
 	@for i in {1..10}; do \
 		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
 	done
-	@echo "PostgreSQL is ready!"
+	@printf "\nPostgreSQL is ready!\n\n"
 # pg_isready is postgresql tool which allows to connect to psql without authentication
 # in order to retrieve availability information
 # (useful to avoid to get error because of a too soon connection attempt).
@@ -181,8 +183,6 @@ wait_for_postgres:
 down:
 	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(DOWN_SH)
 	$(MAKE) docker_checks
-# Also deletes volumes.
-# Comment the line in the file to keep them.
 
 
 rm_volumes:
