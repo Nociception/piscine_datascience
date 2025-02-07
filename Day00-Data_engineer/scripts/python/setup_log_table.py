@@ -9,12 +9,14 @@ def main():
     HEADERS = [
         "table_name",
         "last_modification",
-        "modification_type"
+        "modification_type",
+        "row_diff"
     ]
     COLUMNS_TYPE = [
-        "TEXT PRIMARY KEY",
+        "VARCHAR (50)",
         "TIMESTAMP DEFAULT now()",
-        "VARCHAR (50)"
+        "VARCHAR (50)",
+        "BIGINT"
     ]
 
     create_table_if_not_exists(

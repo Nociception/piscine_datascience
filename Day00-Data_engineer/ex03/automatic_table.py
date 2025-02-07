@@ -1,4 +1,4 @@
-from create_table_import_all_csv_into import create_table_import_all_csv_into
+from import_csv_with_table_creation import import_csv_with_table_creation
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
         "UUID"
     ]
 
-    create_table_import_all_csv_into(
+    import_csv_with_table_creation(
         CONTAINER_CSV_DIR,
         column_types
     )

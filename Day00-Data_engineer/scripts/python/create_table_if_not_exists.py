@@ -1,6 +1,7 @@
 from psycopg_connection_handler import psycopg_connection_handler
+from QueryInfo import QueryInfo
 
-@psycopg_connection_handler(log_action=True)
+@psycopg_connection_handler()
 def create_table_if_not_exists(
     table_name: str,
     headers: list[str],
@@ -23,4 +24,8 @@ def create_table_if_not_exists(
     print(f"create_table_query: {create_table_query}")
     print()
     
-    return create_table_query
+    return QueryInfo(
+        sql_query=create_table_query,
+        modification_type="CREATE",
+        table_name=table_name
+    )

@@ -5,7 +5,7 @@ from get_all_csv_in_dir import get_all_csv_in_dir
 import os
 
 
-def create_table_import_all_csv_into(
+def import_csv_with_table_creation(
         container_csv_dir: str,
         column_types: list[str]
 ) -> None:
