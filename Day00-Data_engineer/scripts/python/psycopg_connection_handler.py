@@ -1,6 +1,8 @@
 from functools import wraps
 from get_psycopg_connection import get_psycopg_connection
 import psycopg
+from count_rows_table import count_rows_table
+from logs_table_filler import logs_table_filler
 
 
 def psycopg_connection_handler():
@@ -15,58 +17,41 @@ def psycopg_connection_handler():
 
             connection = None
             try:
-                connection = get_psycopg_connection()
-                cursor = connection.cursor()
-                print("Connected to the database successfully.")
+                connection, cursor = get_psycopg_connection()
 
                 query_info = func(*args, **kwargs)
+                print(query_info)
+
                 table_name = query_info.table_name
 
                 initial_count = 0
                 if query_info.modification_type != "CREATE":
-                    cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
-                    initial_count = cursor.fetchone()[0]
-                    print(f"Initial row count: {initial_count}")
+                    initial_count = count_rows_table(cursor, table_name)
 
                 if query_info and query_info.sql_query:
-                    print(f"Executing query:\n{query_info.sql_query}")
                     cursor.execute(query_info.sql_query)
-
-                cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
-                final_count = cursor.fetchone()[0]
-                print(f"Final row count: {final_count}")
-
-                row_diff = final_count - initial_count
-                print(f"Rows affected: {row_diff}")
-
-
-
-                log_query = f"""
-                INSERT INTO logs (table_name, last_modification, modification_type, row_diff)
-                VALUES ('{table_name}', now(), '{query_info.modification_type}', {row_diff});
-                """
-                cursor.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_name = 'logs'
-                );
-                """)
-                logs_exists = cursor.fetchone()[0]
-
-                if logs_exists:
-                    print(f"Logging action:\n{log_query}")
-                    cursor.execute(log_query)
                 else:
-                    print("Logs table does not exist, skipping logging.")
+                    raise psycopg.OperationalError(
+                        "QueryInfo object, or its query attributes is None."
+                    )
 
+                final_count = count_rows_table(cursor, table_name)
+                row_diff = final_count - initial_count
 
+                logs_table_filler(
+                    cursor,
+                    query_info,
+                    row_diff
+                )
 
                 connection.commit()
                 print("Transaction committed.")
-                return {
-                    'query': query_info.sql_query,
-                    'rows_affected': row_diff
-                }
+
+                # Uncomment the following lines to debug the decorator
+                # return {
+                #     'query': query_info.sql_query,
+                #     'rows_affected': row_diff
+                # }
 
             except psycopg.OperationalError as e:
                 print(f"Database connection error: {e}")

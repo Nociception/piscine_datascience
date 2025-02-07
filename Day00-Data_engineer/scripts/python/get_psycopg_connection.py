@@ -1,7 +1,7 @@
 import psycopg, os
 
 
-def get_psycopg_connection() -> psycopg.connect:
+def get_psycopg_connection() -> tuple[psycopg.connect, psycopg.Cursor]:
     """DOCSTRING"""
 
     connection = psycopg.connect(
@@ -11,5 +11,6 @@ def get_psycopg_connection() -> psycopg.connect:
         host=os.getenv("POSTGRES_HOST"),
         port=os.getenv("POSTGRES_PORT"),
     )
+    print("Connected to the database successfully.")
 
-    return connection
+    return connection, connection.cursor()

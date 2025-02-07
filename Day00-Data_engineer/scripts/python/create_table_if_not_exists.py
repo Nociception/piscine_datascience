@@ -16,13 +16,10 @@ def create_table_if_not_exists(
         f"{header} {column_type}"
         for header, column_type in zip(headers, column_types)
     )
-    print(f"columns: {columns}")
 
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {table_name} ({columns});
     """
-    print(f"create_table_query: {create_table_query}")
-    print()
     
     return QueryInfo(
         sql_query=create_table_query,

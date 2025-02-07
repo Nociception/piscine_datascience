@@ -1,7 +1,5 @@
 #TODO
-# reactivate the logs table in the up makefile rule
-# enable the log argument in the py functions
-# protect the ex against double call makefile rule
+# show the logs table in case of some lines are already in the targeted table
 # check every commands in the day00
 
 # clean commented lines in the code
@@ -9,13 +7,13 @@
 # write a docstring for this makefile
 # write the help rule
 # color log messages
-# factor all python files
 # flake8
 # secure data volume, in case of a deletion attempt
 # check again every python function DOCSTRING
 # check invalid option -W (it should be there, but it currently leads to an error)
 
 # Makefile
+
 #  Files
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
 OUTPUT_ZIP = subject.zip
