@@ -20,7 +20,7 @@ def create_table_if_not_exists(
     create_table_query = f"""
     CREATE TABLE IF NOT EXISTS {table_name} ({columns});
     """
-    
+
     return QueryInfo(
         sql_query=create_table_query,
         modification_type="CREATE",

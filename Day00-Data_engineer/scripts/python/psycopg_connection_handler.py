@@ -3,6 +3,7 @@ from get_psycopg_connection import get_psycopg_connection
 import psycopg
 from count_rows_table import count_rows_table
 from logs_table_filler import logs_table_filler
+from proceed_after_table_report import proceed_after_table_report
 
 
 def psycopg_connection_handler():
@@ -28,8 +29,15 @@ def psycopg_connection_handler():
                 if query_info.modification_type != "CREATE":
                     initial_count = count_rows_table(cursor, table_name)
 
+                if not proceed_after_table_report(
+                    cursor,
+                    query_info,
+                ):
+                    return
+
                 if query_info and query_info.sql_query:
                     cursor.execute(query_info.sql_query)
+                    print("Query executed.")
                 else:
                     raise psycopg.OperationalError(
                         "QueryInfo object, or its query attributes is None."
@@ -49,7 +57,7 @@ def psycopg_connection_handler():
 
                 # Uncomment the following lines to debug the decorator
                 # return {
-                #     'query': query_info.sql_query,
+                #     'query': query_info,
                 #     'rows_affected': row_diff
                 # }
 

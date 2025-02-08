@@ -1,8 +1,10 @@
 #TODO
 # checklogtable.py must be reforged
 # show the logs table in case of some lines are already in the targeted table
+# ex01 and 02 are now somehow broken ; must fix them, with the new logs table process
 # check every commands in the day00
 
+# study how python import can be shorter/smarter
 # clean commented lines in the code
 # check useless/ghost makefile variable
 # write a docstring for this makefile
@@ -238,7 +240,6 @@ ex00: up psql
 
 
 ex01-setup: up
-
 	$(PSQL) -f /ex01/ex01.sql;
 
 
