@@ -27,21 +27,35 @@ def logs_table_filler(
         )
         logs_exists = cursor.fetchone()[0]
         if logs_exists:
+
             log_query = f"""
             INSERT INTO logs (
                 table_name,
                 last_modification,
                 modification_type,
+                files_involved,
                 row_diff
             )
-            VALUES (
-                '{table_name}',
-                now(),
-                '{query_info.modification_type}',
-                {row_diff}
-            );
+            VALUES (%s, now(), %s, %s, %s)
             """
-            print(f"Logging action:\n{log_query}")
-            cursor.execute(log_query)
+
+            params = (
+                table_name,
+                query_info.modification_type,
+                query_info.files_involved,
+                row_diff
+            )
+
+            print(f"Logging action:\n{log_query}\nParams: {params}")
+            cursor.execute(log_query, params)
         else:
             print("Logs table does not exist, skipping logging.")
+
+
+# VALUES (
+#                 '{table_name}',
+#                 now(),
+#                 '{query_info.modification_type}',
+#                 '{query_info.files_involved}',
+#                 {row_diff}
+#             );

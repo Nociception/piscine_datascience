@@ -24,5 +24,6 @@ def create_table_if_not_exists(
     return QueryInfo(
         sql_query=create_table_query,
         modification_type="CREATE",
-        table_name=table_name
+        table_name=table_name,
+        files_involved=None
     )

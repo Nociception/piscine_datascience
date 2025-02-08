@@ -1,4 +1,5 @@
 #TODO
+# checklogtable.py must be reforged
 # show the logs table in case of some lines are already in the targeted table
 # check every commands in the day00
 

@@ -10,12 +10,14 @@ def main():
         "table_name",
         "last_modification",
         "modification_type",
+        "files_involved",
         "row_diff"
     ]
     COLUMNS_TYPE = [
         "VARCHAR (50)",
         "TIMESTAMP DEFAULT now()",
         "VARCHAR (50)",
+        "VARCHAR (300)",
         "BIGINT"
     ]
 

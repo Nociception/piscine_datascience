@@ -1,5 +1,6 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
+from pathlib import Path
 
 @psycopg_connection_handler()
 def import_csv_to_table(
@@ -17,5 +18,6 @@ def import_csv_to_table(
     return QueryInfo(
         sql_query=copy_query,
         modification_type="IMPORT CSV",
-        table_name=table_name
+        table_name=table_name,
+        files_involved=Path(csv_path).name
     )
