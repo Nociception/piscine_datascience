@@ -1,16 +1,12 @@
 #TODO
-# checklogtable.py must be reforged
 # Path().name in the logs_table_filler, instead of writing it when parameters are sent to
 #	logs_table_filler
-# write the logs_checker step before running the ex02/table.sql file
-#	to show what are the last table manipulation in the logs table
 # logs_table_filler: factor it with new function table_exists
-# show the logs table in case of some lines are already in the targeted table
-# ex01 and 02 are now somehow broken ; must fix them, with the new logs table process
+# ex01 is now somehow broken ; must fix them, with the new logs table process
 # check every commands in the day00 ; also complete the .PHONY
-# check how to import properly a class (if from Class import Class is needed, or if it can be shorter/smarter)
 # write a makefile rule (and a related .py file) to drop a table and log it
 
+# check how to import properly a class (if from Class import Class is needed, or if it can be shorter/smarter)
 # study how python import can be shorter/smarter
 # clean commented lines in the code
 # check useless/ghost makefile variable
@@ -67,9 +63,10 @@ REQUIREMENTS = requirements.txt
 SETUP_LOG_TABLE = setup_log_table.py
 CHECK_LOG_TABLE = check_log_table.py
 EX02_SQL = ex02/table.sql
-EX02_TABLE = data_2022_dec
+EX02_TABLE = data_2022_nov
 EX02_CSV_FILE = /$(DATA_VOLUME)/customer/$(EX02_TABLE).csv
-EX02_LOGS_PY = ex02_logs.py
+EX02_LOGS_BEFORE_PY = ex02_logs_before.py
+EX02_LOGS_AFTER_PY = ex02_logs_after.py
 #  Commands
 DOCKER_EXEC = docker exec -it
 RM_VOLUMES_SH = rm_volumes.sh
@@ -298,19 +295,24 @@ ex01-clean:
 
 
 ex02: up
-	@if [ -f $(EX02_SQL) ]; then \
-		echo "Executing SQL file with dynamic path..."; \
-		$(PSQL) -v file="$(EX02_CSV_FILE)" -v table="$(EX02_TABLE)" -f $(EX02_SQL); \
-		echo "Table created and data imported successfully!"; \
-	else \
-		echo "Error: $(EX02_SQL) not found."; \
-	fi
-#	-v is a psql option for sending a variable
-#	-f is a psql option for running .sql files
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_BEFORE_PY)
 
-test:
-	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_PY)
-
+	@read -p "Proceed anyway with creation and import of $(EX02_TABLE) ? (yes/no): " user_input; \
+		if [ "$$user_input" = "yes" ] || [ "$$user_input" = "y" ] || [ "$$user_input" = "" ]; then \
+			echo "$(EX02_TABLE) creation and import..."; \
+			if [ -f $(EX02_SQL) ]; then \
+				echo "Executing SQL file with dynamic path..."; \
+				$(PSQL) -v file="$(EX02_CSV_FILE)" -v table="$(EX02_TABLE)" -f $(EX02_SQL); \
+				echo "Table created and data imported successfully!"; \
+			else \
+				echo "Error: $(EX02_SQL) not found."; \
+			fi; \
+			$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_AFTER_PY); \
+		else \
+			echo "Import aborted."; \
+		fi
+#		-v is a psql option for sending a variable
+#		-f is a psql option for running .sql files
 
 
 ex03: up

@@ -43,7 +43,7 @@ def main() -> None:
                 cursor,
                 QueryInfo(
                     "",
-                    "IMPORT",
+                    "IMPORT CSV",
                     ex02_table,
                     Path(os.getenv("EX02_CSV_FILE")).name,
                 ),
@@ -54,8 +54,6 @@ def main() -> None:
 
         connection.commit()
         print("Transaction committed.")
-
-        print("END OF TRY EXCEPT BLOC REACHED")
 
     except psycopg.OperationalError as e:
         print(f"Database connection error: {e}")

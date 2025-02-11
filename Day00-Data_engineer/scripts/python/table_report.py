@@ -53,6 +53,7 @@ def table_report(
                 for k, width in enumerate(widths.values())
             )
         )
+        print()
 
     else:
-        print(f"No previous log found concerning '{table_name}'.")
+        print(f"\nNo previous log found concerning '{table_name}'.\n")

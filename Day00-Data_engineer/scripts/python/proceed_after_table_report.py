@@ -10,9 +10,6 @@ def proceed_after_table_report(
 
     if query_info.modification_type in ["CREATE", "DROP"]:
         return True
-    
-    print("\nSTART: proceed_after_table_report")
-
 
     print(query_info)
     table_report(cursor, query_info.table_name)
@@ -27,8 +24,3 @@ def proceed_after_table_report(
             return False
         else:
             print("Invalid input. Please type 'yes' or 'no'.")
-
-
-    # print("END: proceed_after_table_report\n")
-
-    # return True
