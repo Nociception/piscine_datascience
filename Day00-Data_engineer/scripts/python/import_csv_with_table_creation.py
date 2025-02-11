@@ -1,5 +1,5 @@
 from pathlib import Path
-from create_table_if_not_exists import create_table_if_not_exists
+from create_table import create_table
 from import_csv_to_table import import_csv_to_table
 from get_all_csv_in_dir import get_all_csv_in_dir
 import os
@@ -21,7 +21,7 @@ def import_csv_with_table_creation(
             headers = file.readline().strip().split(",")
             print(f"Headers for {csv_file}: {headers}")
 
-        create_table_if_not_exists(
+        create_table(
             table_name,
             headers,
             column_types

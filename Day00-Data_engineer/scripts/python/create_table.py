@@ -2,7 +2,7 @@ from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
 
 @psycopg_connection_handler()
-def create_table_if_not_exists(
+def create_table(
     table_name: str,
     headers: list[str],
     column_types: list[str],
@@ -18,7 +18,7 @@ def create_table_if_not_exists(
     )
 
     create_table_query = f"""
-    CREATE TABLE IF NOT EXISTS {table_name} ({columns});
+    CREATE TABLE {table_name} ({columns});
     """
 
     return QueryInfo(

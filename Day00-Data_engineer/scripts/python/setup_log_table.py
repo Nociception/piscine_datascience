@@ -1,4 +1,4 @@
-from create_table_if_not_exists import create_table_if_not_exists
+from create_table import create_table
 import os
 
 
@@ -21,7 +21,7 @@ def main():
         "BIGINT"
     ]
 
-    create_table_if_not_exists(
+    create_table(
         TABLE_NAME,
         HEADERS,
         COLUMNS_TYPE

@@ -57,6 +57,7 @@ DOWN_SH = down.sh
 REQUIREMENTS = requirements.txt
 SETUP_LOG_TABLE = setup_log_table.py
 CHECK_LOG_TABLE = check_log_table.py
+EX02_LOGS_PY = ex02_logs.py
 #  Directories
 PYTHON_APP_DIR = app
 #  Commands
@@ -71,7 +72,7 @@ DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 		docker_checks postgres_container python_container rebuild_image\
 		ex00 \
 		ex01-setup ex01-clean \
-		download unzip ex02-import_data ex02-verify_data ex02-clean \
+		download unzip ex02 \
 		ex03 \
 		ex04 \
 
@@ -287,7 +288,7 @@ ex01-clean:
 	$(PSQL) -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE);"
 
 
-ex02-import_data: up
+ex02: up
 	@if [ -f $(EX02_SQL) ]; then \
 		echo "Copying SQL file to container..."; \
 		cat $(EX02_SQL) | docker exec -i $(POSTGRES_CONTAINER) sh -c 'cat > /create_and_import.sql'; \
@@ -298,19 +299,15 @@ ex02-import_data: up
 		echo "Error: $(EX02_SQL) not found."; \
 	fi
 #	tee could have been necessary in during the copy into the container,
-#	instead of cat (the second one), to avoid errors ; however, cat works well.
+#	instead of cat (the second one), to avoid errors ;
+#	however, cat works well.
 #	-f is a psql option for running .sql files
 
-ex02-verify_data: up
-	$(PSQL) -c "\
-	SELECT COUNT(*) FROM data_2022_dec; \
-	SELECT * FROM data_2022_dec LIMIT 10;"
-
-ex02-clean: up
-	$(PSQL) -c "DROP TABLE IF EXISTS data_2022_dec;"
+#	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_PY)
 
 
-ex03: up ex02-clean
+
+ex03: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX03_DIR)/$(EX03_PY)
 
 
