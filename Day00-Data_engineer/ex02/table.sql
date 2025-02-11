@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS data_2022_dec (
+CREATE TABLE IF NOT EXISTS :"table" (
     event_time TIMESTAMP WITH TIME ZONE,
     event_type VARCHAR(50),
     product_id INT,
@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS data_2022_dec (
     user_session UUID
 );
 
-COPY data_2022_dec (event_time, event_type, product_id, price, user_id, user_session)
-FROM '/data/customer/data_2022_dec.csv'
+COPY :"table" (event_time, event_type, product_id, price, user_id, user_session)
+FROM :'file'
 DELIMITER ','
 CSV HEADER;

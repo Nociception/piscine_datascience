@@ -31,7 +31,6 @@ EXAMPLE_TABLE = example_table
 EX01_SQL = ex01.sql
 EX01_SQL_HOST = $(SCRIPTS_DIR)/$(EX01_SQL)
 EX01_SQL_CONTAINER = ex01/$(EX01_SQL)
-EX02_SQL = ex02/table.sql
 EX03_DIR = ex03
 EX03_PY = automatic_table.py
 EX04_DIR = ex04
@@ -51,15 +50,19 @@ DOCKER_NETWORK = network
 POSTGRES_CONTAINER = postgres
 PYTHON_CONTAINER = python
 ADMINER_CONTAINER = adminer
+#  Directories
+PYTHON_APP_DIR = app
+DATA_VOLUME = data
 #  Files
 DC_COMPOSE = docker-compose.yaml
 DOWN_SH = down.sh
 REQUIREMENTS = requirements.txt
 SETUP_LOG_TABLE = setup_log_table.py
 CHECK_LOG_TABLE = check_log_table.py
+EX02_SQL = ex02/table.sql
+EX02_TABLE = data_2022_dec
+EX02_CSV_FILE = /$(DATA_VOLUME)/customer/$(EX02_TABLE).csv
 EX02_LOGS_PY = ex02_logs.py
-#  Directories
-PYTHON_APP_DIR = app
 #  Commands
 DOCKER_EXEC = docker exec -it
 RM_VOLUMES_SH = rm_volumes.sh
@@ -126,7 +129,7 @@ env:
 		echo "ADMINER_CONTAINER=$(ADMINER_CONTAINER)" >> .env; \
 		echo "ADMINER_PORT=$(ADMINER_PORT)" >> .env; \
 		echo "ADMINER_SYSTEM=$(ADMINER_SYSTEM)" >> .env; \
-		echo "DATA_VOLUME=data" >> .env; \
+		echo "DATA_VOLUME=$(DATA_VOLUME)" >> .env; \
 		echo "DOCKER_NETWORK=$(DOCKER_NETWORK)" >> .env; \
 		echo "LOGS_TABLE=$(LOGS_TABLE)" >> .env; \
 		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
@@ -142,6 +145,7 @@ env:
 		echo "EX01_SQL_HOST=$(EX01_SQL_HOST)" >> .env; \
 		echo "EX01_SQL_CONTAINER=$(EX01_SQL_CONTAINER)" >> .env; \
 		echo "EX01_SQL=$(EX01_SQL)" >> .env; \
+		echo "EX02_SQL=$(EX02_SQL)" >> .env; \
 		echo "INIT_PG_HBA_SH=init_pg_hba.sh" >> .env; \
 		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
 		echo "PG_HBA_CONF=pg_hba.conf" >> .env; \
@@ -286,17 +290,13 @@ ex01-clean:
 
 ex02: up
 	@if [ -f $(EX02_SQL) ]; then \
-		echo "Copying SQL file to container..."; \
-		cat $(EX02_SQL) | docker exec -i $(POSTGRES_CONTAINER) sh -c 'cat > /create_and_import.sql'; \
-		echo "Executing SQL file to create table and import data..."; \
-		$(PSQL) -f /create_and_import.sql; \
+		echo "Executing SQL file with dynamic path..."; \
+		$(PSQL) -v file="$(EX02_CSV_FILE)" -v table="$(EX02_TABLE)" -f $(EX02_SQL); \
 		echo "Table created and data imported successfully!"; \
 	else \
 		echo "Error: $(EX02_SQL) not found."; \
 	fi
-#	tee could have been necessary in during the copy into the container,
-#	instead of cat (the second one), to avoid errors ;
-#	however, cat works well.
+#	-v is a psql option for sending a variable
 #	-f is a psql option for running .sql files
 
 test:

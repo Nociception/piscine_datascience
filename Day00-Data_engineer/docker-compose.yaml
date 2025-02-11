@@ -30,6 +30,7 @@ services:
     volumes:
       - ./${SUBJECT_DIR}:/${DATA_VOLUME}
       - ./${EX01_SQL_HOST}:/${EX01_SQL_CONTAINER}
+      - ./${EX02_SQL}:/${EX02_SQL}
     networks:
       - ${DOCKER_NETWORK}
   
