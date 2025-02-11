@@ -19,5 +19,5 @@ def import_csv_to_table(
         sql_query=copy_query,
         modification_type="IMPORT CSV",
         table_name=table_name,
-        files_involved=Path(csv_path).name
+        files_involved=csv_path
     )

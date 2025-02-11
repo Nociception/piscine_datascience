@@ -42,10 +42,10 @@ def main() -> None:
             logs_table_filler(
                 cursor,
                 QueryInfo(
-                    "",
-                    "IMPORT CSV",
-                    ex02_table,
-                    Path(os.getenv("EX02_CSV_FILE")).name,
+                    sql_query="",
+                    modification_type="IMPORT CSV",
+                    table_name=ex02_table,
+                    files_involved=os.getenv("EX02_CSV_FILE")
                 ),
                 row_diff=nb_rows_ex02_table
             )

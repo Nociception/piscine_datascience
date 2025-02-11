@@ -1,5 +1,7 @@
 from QueryInfo import QueryInfo
 import psycopg
+from pathlib import Path
+
 
 def logs_table_filler(
     cursor: psycopg.Cursor,
@@ -42,7 +44,7 @@ def logs_table_filler(
             params = (
                 table_name,
                 query_info.modification_type,
-                query_info.files_involved
+                Path(query_info.files_involved).name
                     if query_info.files_involved
                     else None,
                 row_diff
@@ -52,12 +54,3 @@ def logs_table_filler(
             cursor.execute(log_query, params)
         else:
             print("Logs table does not exist, skipping logging.")
-
-
-# VALUES (
-#                 '{table_name}',
-#                 now(),
-#                 '{query_info.modification_type}',
-#                 '{query_info.files_involved}',
-#                 {row_diff}
-#             );

@@ -12,7 +12,7 @@
 # check useless/ghost makefile variable
 # write a docstring for this makefile
 # write the help rule
-# color log messages
+# color and clean log messages
 # flake8
 # secure data volume, in case of a deletion attempt
 # check again every python function DOCSTRING
