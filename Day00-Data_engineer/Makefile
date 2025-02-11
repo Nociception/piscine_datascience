@@ -88,10 +88,6 @@ up: env unzip
 	make rebuild_image SERVICE=<service_name>\n\n"; \
 
 
-test:
-	$(DOCKER_PYTHON) $(SCRIPTS_DIR)/$(SETUP_LOG_TABLE)
-
-
 rebuild_image:
 	@if [ -z "$(SERVICE)" ]; then \
 		printf "ERROR: No service name provided!\n \
@@ -303,7 +299,8 @@ ex02: up
 #	however, cat works well.
 #	-f is a psql option for running .sql files
 
-#	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_PY)
+test:
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_PY)
 
 
 
