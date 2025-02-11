@@ -1,6 +1,10 @@
 from get_psycopg_connection import get_psycopg_connection
 import psycopg
 from table_exists import table_exists
+import os
+from pathlib import Path
+from logs_table_filler import logs_table_filler
+from QueryInfo import QueryInfo
 
 
 def main() -> None:
@@ -10,17 +14,34 @@ def main() -> None:
     try:
         connection, cursor = get_psycopg_connection()
     
-        if not table_exists(cursor, "logs"):
+        logs_table = os.getenv("LOGS_TABLE")
+        if not table_exists(cursor, logs_table):
             raise psycopg.OperationalError(
-                "logs table does not exist."
-            )
-        # LOGS EXISTS AFTER THIS STEP
-
-        if not table_exists(cursor, ""):
-            raise psycopg.OperationalError(
-                "logs table does not exist."
+                f"{logs_table} table does not exist."
             )
 
+        ex02_table = os.getenv("EX02_TABLE")
+        if not table_exists(cursor, ex02_table):
+            raise psycopg.OperationalError(
+                f"{ex02_table} table does not exist."
+            )
+
+        logs_table_filler(
+            cursor,
+            QueryInfo(
+                "",
+                "CREATE",
+                ex02_table,
+                Path(os.getenv("EX02_CSV_FILE")).name,
+            )
+        )
+
+        
+
+        connection.commit()
+        print("Transaction committed.")
+
+        print("END OF TRY EXCEPT BLOC REACHED")
 
     except psycopg.OperationalError as e:
         print(f"Database connection error: {e}")

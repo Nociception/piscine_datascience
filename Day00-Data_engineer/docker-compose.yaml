@@ -67,6 +67,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_CONTAINER}
       POSTGRES_PORT: ${POSTGRES_PORT}
+      LOGS_TABLE: ${LOGS_TABLE}
+      EX02_TABLE: ${EX02_TABLE}
+      EX02_CSV_FILE: ${EX02_CSV_FILE}
     networks:
       - ${DOCKER_NETWORK}
     command: ["bash"]

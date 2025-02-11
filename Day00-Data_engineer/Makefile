@@ -1,8 +1,13 @@
 #TODO
+# write the logs_checker step before running the ex02/table.sql file
+#	to show what are the last table manipulation in the logs table
+# logs_table_filler: factor it with new function table_exists
 # checklogtable.py must be reforged
 # show the logs table in case of some lines are already in the targeted table
 # ex01 and 02 are now somehow broken ; must fix them, with the new logs table process
-# check every commands in the day00
+# check every commands in the day00 ; also complete the .PHONY
+# check how to import properly a class (if from Class import Class is needed, or if it can be shorter/smarter)
+# write a makefile rule (and a related .py file) to drop a table and log it
 
 # study how python import can be shorter/smarter
 # clean commented lines in the code
@@ -146,6 +151,8 @@ env:
 		echo "EX01_SQL_CONTAINER=$(EX01_SQL_CONTAINER)" >> .env; \
 		echo "EX01_SQL=$(EX01_SQL)" >> .env; \
 		echo "EX02_SQL=$(EX02_SQL)" >> .env; \
+		echo "EX02_CSV_FILE=$(EX02_CSV_FILE)" >> .env; \
+		echo "EX02_TABLE=$(EX02_TABLE)" >> .env; \
 		echo "INIT_PG_HBA_SH=init_pg_hba.sh" >> .env; \
 		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
 		echo "PG_HBA_CONF=pg_hba.conf" >> .env; \
