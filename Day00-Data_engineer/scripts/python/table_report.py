@@ -1,5 +1,6 @@
 import psycopg
 import os
+from table_exists import table_exists
 
 
 def ellipse(
@@ -19,6 +20,12 @@ def table_report(
     table_name: str,
 ) -> None:
     """DOCSTRING"""
+
+    logs_table = os.getenv("LOGS_TABLE")
+    if not table_exists(cursor, logs_table):
+        raise psycopg.OperationalError(
+            f"{logs_table} table does not exist."
+        )
 
     query = f"SELECT * FROM {os.getenv('LOGS_TABLE')} WHERE table_name = %s;"
     cursor.execute(query, (table_name,))
