@@ -1,8 +1,10 @@
 #TODO
+# checklogtable.py must be reforged
+# Path().name in the logs_table_filler, instead of writing it when parameters are sent to
+#	logs_table_filler
 # write the logs_checker step before running the ex02/table.sql file
 #	to show what are the last table manipulation in the logs table
 # logs_table_filler: factor it with new function table_exists
-# checklogtable.py must be reforged
 # show the logs table in case of some lines are already in the targeted table
 # ex01 and 02 are now somehow broken ; must fix them, with the new logs table process
 # check every commands in the day00 ; also complete the .PHONY

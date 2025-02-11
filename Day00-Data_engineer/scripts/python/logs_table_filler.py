@@ -42,7 +42,9 @@ def logs_table_filler(
             params = (
                 table_name,
                 query_info.modification_type,
-                query_info.files_involved,
+                query_info.files_involved
+                    if query_info.files_involved
+                    else None,
                 row_diff
             )
 

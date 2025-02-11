@@ -1,5 +1,7 @@
+import psycopg
+
 def table_exists(
-    cursor,
+    cursor: psycopg.Cursor,
     table_name: str
 ) -> bool:
     """DOCSTRING"""

@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from logs_table_filler import logs_table_filler
 from QueryInfo import QueryInfo
+from count_rows_table import count_rows_table
 
 
 def main() -> None:
@@ -32,11 +33,24 @@ def main() -> None:
                 "",
                 "CREATE",
                 ex02_table,
-                Path(os.getenv("EX02_CSV_FILE")).name,
+                ""
             )
         )
 
-        
+        nb_rows_ex02_table = count_rows_table(cursor, ex02_table)
+        if nb_rows_ex02_table:
+            logs_table_filler(
+                cursor,
+                QueryInfo(
+                    "",
+                    "IMPORT",
+                    ex02_table,
+                    Path(os.getenv("EX02_CSV_FILE")).name,
+                ),
+                row_diff=nb_rows_ex02_table
+            )
+        else:
+            print(f"{ex02_table} seems empty.")
 
         connection.commit()
         print("Transaction committed.")
