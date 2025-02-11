@@ -1,6 +1,5 @@
 #TODO
-# Path().name in the logs_table_filler, instead of writing it when parameters are sent to
-#	logs_table_filler
+# logs_table with env variable everywhere in the .py files
 # logs_table_filler: factor it with new function table_exists
 # ex01 is now somehow broken ; must fix them, with the new logs table process
 # check every commands in the day00 ; also complete the .PHONY

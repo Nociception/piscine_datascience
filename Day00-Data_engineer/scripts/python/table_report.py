@@ -1,4 +1,5 @@
 import psycopg
+import os
 
 
 def ellipse(
@@ -19,7 +20,7 @@ def table_report(
 ) -> None:
     """DOCSTRING"""
 
-    query = f"SELECT * FROM logs WHERE table_name = %s;"
+    query = f"SELECT * FROM {os.getenv('LOGS_TABLE')} WHERE table_name = %s;"
     cursor.execute(query, (table_name,))
 
     log_entries = cursor.fetchall()
