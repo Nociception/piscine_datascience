@@ -1,5 +1,5 @@
 #TODO
-# secure data volume, in case of a deletion attempt
+# check utils.sh (if it is still used and useful)
 # check invalid option -W (it should be there, but it currently leads to an error)
 # color and clean log messages
 # check every commands in the day00 ; also complete the .PHONY
@@ -171,7 +171,7 @@ docker_checks:
 	@printf "\n"
 
 
-psql: wait_for_postgres
+psql: up wait_for_postgres
 	$(PSQL)
 
 

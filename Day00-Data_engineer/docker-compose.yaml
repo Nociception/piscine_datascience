@@ -2,6 +2,16 @@
 # It seems that docker-compose automatic .env file works
 # with a cache file, which leads to .env updates fail.
 
+networks:
+  network:
+    driver: bridge
+
+
+volumes:
+  postgres_data:
+    driver: local
+
+
 services:
 
   postgres:
@@ -30,6 +40,7 @@ services:
     volumes:
       - ./${SUBJECT_DIR}:/${DATA_VOLUME}
       - ./${EX02_SQL}:/${EX02_SQL}
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - ${DOCKER_NETWORK}
   
@@ -74,13 +85,3 @@ services:
       - ${DOCKER_NETWORK}
     command: ["bash"]
     tty: true
-
-
-networks:
-  network:
-    driver: bridge
-
-
-volumes:
-  postgres_data:
-    driver: local
