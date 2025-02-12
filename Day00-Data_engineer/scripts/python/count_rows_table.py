@@ -1,4 +1,5 @@
 import psycopg
+from psycopg.sql import SQL, Identifier
 from table_exists import table_exists
 
 def count_rows_table(
@@ -12,8 +13,6 @@ def count_rows_table(
             f"{table_name} table does not exist."
         )
 
-    cursor.execute(f"""
-        SELECT COUNT(*) FROM {table_name}
-        """
-    )
+    query = SQL("SELECT COUNT(*) FROM {}").format(Identifier(table_name))
+    cursor.execute(query)
     return cursor.fetchone()[0]

@@ -1,4 +1,7 @@
 #TODO
+# sql injection
+
+# write down an rm_container rules
 # check invalid option -W (it should be there, but it currently leads to an error)
 # color and clean log messages
 # check every commands in the day00 ; also complete the .PHONY
