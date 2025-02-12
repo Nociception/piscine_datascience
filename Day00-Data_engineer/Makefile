@@ -1,19 +1,14 @@
 #TODO
-# ex01 is now somehow broken ; must fix them, with the new logs table process
+# secure data volume, in case of a deletion attempt
+# check invalid option -W (it should be there, but it currently leads to an error)
+# color and clean log messages
 # check every commands in the day00 ; also complete the .PHONY
-# write a makefile rule (and a related .py file) to drop a table and log it
-
-# check how to import properly a class (if from Class import Class is needed, or if it can be shorter/smarter)
-# study how python import can be shorter/smarter
 # clean commented lines in the code
 # check useless/ghost makefile variable
 # write a docstring for this makefile
 # write the help rule
-# color and clean log messages
 # flake8
-# secure data volume, in case of a deletion attempt
 # check again every python function DOCSTRING
-# check invalid option -W (it should be there, but it currently leads to an error)
 
 # Makefile
 
@@ -90,6 +85,14 @@ up: env unzip
 	@printf "\nReminder: if a Dockerfile has been modified, \
 	you must stop, rebuild and up it.\n \
 	make rebuild_image SERVICE=<service_name>\n\n"; \
+
+
+drop_table:
+	@if [ -z "$(TABLE)" ]; then \
+		printf "ERROR: No table name provided !\nUsage: make drop_table TABLE=<table_name>\n"; \
+		exit 1; \
+	fi
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/drop_table.py $(TABLE)
 
 
 rebuild_image:

@@ -26,7 +26,7 @@ def psycopg_connection_handler():
                 table_name = query_info.table_name
 
                 initial_count = 0
-                if query_info.modification_type != "CREATE":
+                if query_info.modification_type not in ("CREATE", "DROP"):
                     initial_count = count_rows_table(cursor, table_name)
 
                 if not proceed_after_table_report(
@@ -43,7 +43,9 @@ def psycopg_connection_handler():
                         "QueryInfo object, or its query attributes is None."
                     )
 
-                final_count = count_rows_table(cursor, table_name)
+                final_count = 0
+                if query_info.modification_type not in ("CREATE", "DROP"):
+                    final_count = count_rows_table(cursor, table_name)
                 row_diff = final_count - initial_count
 
                 logs_table_filler(
