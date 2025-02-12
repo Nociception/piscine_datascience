@@ -54,6 +54,7 @@ DATA_VOLUME = data
 DC_COMPOSE = docker-compose.yaml
 DOWN_SH = down.sh
 REQUIREMENTS = requirements.txt
+DROP_TABLE_PY = drop_table.py
 SETUP_LOG_TABLE = setup_log_table.py
 CHECK_LOG_TABLE = check_log_table.py
 EX02_SQL = ex02/table.sql
@@ -89,12 +90,12 @@ up: env unzip
 	make rebuild_image SERVICE=<service_name>\n\n"; \
 
 
-drop_table:
+drop:
 	@if [ -z "$(TABLE)" ]; then \
-		printf "ERROR: No table name provided !\nUsage: make drop_table TABLE=<table_name>\n"; \
+		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
 		exit 1; \
 	fi
-	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/drop_table.py $(TABLE)
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
 
 
 rebuild_image:
