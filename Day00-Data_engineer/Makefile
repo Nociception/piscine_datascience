@@ -1,5 +1,4 @@
 #TODO
-# check utils.sh (if it is still used and useful)
 # check invalid option -W (it should be there, but it currently leads to an error)
 # color and clean log messages
 # check every commands in the day00 ; also complete the .PHONY
