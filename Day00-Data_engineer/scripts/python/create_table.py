@@ -6,7 +6,7 @@ def create_table(
     table_name: str,
     headers: list[str],
     column_types: list[str],
-) -> str:
+) -> QueryInfo:
     """
     Create a table (if it does not exist) in PostgreSQL,
     according to the args.

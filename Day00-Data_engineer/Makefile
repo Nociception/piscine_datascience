@@ -28,9 +28,9 @@ MAKEFILE_DIR = makefile
 #  Exercices
 LOGS_TABLE = logs
 EXAMPLE_TABLE = example_table
-EX01_SQL = ex01.sql
-EX01_SQL_HOST = $(SCRIPTS_DIR)/$(EX01_SQL)
-EX01_SQL_CONTAINER = ex01/$(EX01_SQL)
+EX01_DIR = $(SCRIPTS_DIR)
+EX01_PY = ex01.py
+EX01_TABLE = example
 EX03_DIR = ex03
 EX03_PY = automatic_table.py
 EX04_DIR = ex04
@@ -143,9 +143,8 @@ env:
 		echo "PYTHON_DOCKERFILE=Dockerfile_python" >> .env; \
 		echo "#" >> .env; \
 		echo "#  Files" >> .env; \
-		echo "EX01_SQL_HOST=$(EX01_SQL_HOST)" >> .env; \
-		echo "EX01_SQL_CONTAINER=$(EX01_SQL_CONTAINER)" >> .env; \
-		echo "EX01_SQL=$(EX01_SQL)" >> .env; \
+		echo "EX01_PY=$(EX01_PY)" >> .env; \
+		echo "EX01_TABLE=$(EX01_TABLE)" >> .env; \
 		echo "EX02_SQL=$(EX02_SQL)" >> .env; \
 		echo "EX02_CSV_FILE=$(EX02_CSV_FILE)" >> .env; \
 		echo "EX02_TABLE=$(EX02_TABLE)" >> .env; \
@@ -243,53 +242,9 @@ adminer:
 ex00: up psql
 
 
-ex01-setup: up
-	$(PSQL) -f /ex01/ex01.sql;
-
-
-# 	@echo "Creating table $(EXAMPLE_TABLE)..."
-# 	$(PSQL) -c "\
-# 	CREATE TABLE IF NOT EXISTS $(EXAMPLE_TABLE) ( \
-# 		event_time TIMESTAMP NOT NULL, \
-# 		event_type VARCHAR(50), \
-# 		product_id BIGINT, \
-# 		category_id NUMERIC, \
-# 		category_code VARCHAR(255), \
-# 		brand VARCHAR(255), \
-# 		price NUMERIC(10, 2), \
-# 		user_id BIGINT, \
-# 		user_session VARCHAR(255) \
-# 	);"
-
-# 	$(DOCKER_PYTHON) $(CHECK_LOG_TABLE) $(EXAMPLE_TABLE)
-
-# 	@echo "Inserting data into $(EXAMPLE_TABLE) if empty..."
-# 	$(PSQL) -c "\
-# 	INSERT INTO $(EXAMPLE_TABLE) (event_time, event_type, product_id, category_id, category_code, brand, price, user_id, user_session) \
-# 	SELECT * FROM ( \
-# 	    VALUES \
-# 	    ('2022-10-01 00:00:00'::TIMESTAMP, 'cart', 5773203, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
-# 	    ('2022-10-01 00:00:03'::TIMESTAMP, 'cart', 5773353, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
-# 	    ('2022-10-01 00:00:07'::TIMESTAMP, 'cart', 5723490, 1487580005134238464, NULL, 'runail', 2.62, 463240011, '26dd6e6e-4dac-4778-8d2c-92e149dab885'), \
-# 	    ('2022-10-01 00:00:07'::TIMESTAMP, 'cart', 5881589, 215119107051219712, NULL, 'lovely', 13.48, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
-# 	    ('2022-10-01 00:00:15'::TIMESTAMP, 'cart', 5881449, 148758000513522845952, NULL, 'lovely', 0.56, 429681830, '49e8d843-adf3-428b-a2c3-fe8bc6a307c9'), \
-# 	    ('2022-10-01 00:00:16'::TIMESTAMP, 'cart', 5857269, 1487580005134238464, NULL, 'runail', 2.62, 430174032, '73dea1e7-664e-43f4-8b30-d32b9d5af04f') \
-# 	) AS new_data \
-# 	WHERE NOT EXISTS (SELECT 1 FROM $(EXAMPLE_TABLE))";
-
-# 	@echo "Logging insertion into table logs..."
-# 	$(PSQL) -c "\
-# 	BEGIN; \
-# 	INSERT INTO logs (table_name, last_import) VALUES ('$(EXAMPLE_TABLE)', NOW()) \
-# 	ON CONFLICT (table_name) DO UPDATE SET last_import = NOW(); \
-# 	COMMIT;"
-
+ex01: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX01_DIR)/$(EX01_PY)
 	@$(MAKE) adminer
-
-ex01-clean:
-	@echo "Dropping table $(EXAMPLE_TABLE)..."
-	$(PSQL) -c "DROP TABLE IF EXISTS $(EXAMPLE_TABLE);"
-
 
 ex02: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_BEFORE_PY)

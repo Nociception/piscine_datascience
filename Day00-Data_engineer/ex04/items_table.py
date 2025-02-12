@@ -8,7 +8,7 @@ def main():
     """
 
     CONTAINER_CSV_DIR = "/data/item"
-    column_types = [
+    COLUMN_TYPES = [
         "INT",
         "BIGINT",
         "VARCHAR(50)",
@@ -17,7 +17,7 @@ def main():
 
     import_csv_with_table_creation(
         CONTAINER_CSV_DIR,
-        column_types
+        COLUMN_TYPES
     )
 
 

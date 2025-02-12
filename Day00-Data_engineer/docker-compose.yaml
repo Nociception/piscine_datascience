@@ -29,7 +29,6 @@ services:
       REQUIREMENTS: ${REQUIREMENTS}
     volumes:
       - ./${SUBJECT_DIR}:/${DATA_VOLUME}
-      - ./${EX01_SQL_HOST}:/${EX01_SQL_CONTAINER}
       - ./${EX02_SQL}:/${EX02_SQL}
     networks:
       - ${DOCKER_NETWORK}
@@ -68,6 +67,7 @@ services:
       POSTGRES_HOST: ${POSTGRES_CONTAINER}
       POSTGRES_PORT: ${POSTGRES_PORT}
       LOGS_TABLE: ${LOGS_TABLE}
+      EX01_TABLE: ${EX01_TABLE}
       EX02_TABLE: ${EX02_TABLE}
       EX02_CSV_FILE: ${EX02_CSV_FILE}
     networks:
