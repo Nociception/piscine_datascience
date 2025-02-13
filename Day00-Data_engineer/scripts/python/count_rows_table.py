@@ -2,6 +2,7 @@ import psycopg
 from psycopg.sql import SQL, Identifier
 from table_exists import table_exists
 
+
 def count_rows_table(
     cursor: psycopg.Cursor,
     table_name: str

@@ -2,6 +2,7 @@ import psycopg
 from QueryInfo import QueryInfo
 from table_report import table_report
 
+
 def proceed_after_table_report(
     cursor: psycopg.Cursor,
     query_info: QueryInfo,
