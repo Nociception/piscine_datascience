@@ -3,6 +3,7 @@ from pathlib import Path
 from table_exists import table_exists
 import psycopg, os
 from psycopg.sql import SQL, Identifier
+from sqli_detection import sqli_detection
 
 
 def logs_table_filler(
@@ -43,6 +44,13 @@ def logs_table_filler(
                     else None,
                 row_diff
             )
+
+            sqli_detection(logs_table)
+            sqli_detection(table_name)
+            sqli_detection(query_info.modification_type)
+            sqli_detection(Path(query_info.files_involved).name)
+            # if not isinstance(row_diff, int):
+            #     raise ValueError("row diff must be an int.")
 
             print(
                 f"Logging action:\n"

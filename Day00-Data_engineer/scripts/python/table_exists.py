@@ -1,12 +1,14 @@
 import psycopg
 from psycopg.sql import SQL, Literal
-
+from sqli_detection import sqli_detection
 
 def table_exists(
     cursor: psycopg.Cursor,
     table_name: str
 ) -> bool:
     """DOCSTRING"""
+
+    # sqli_detection(table_name)
 
     query = SQL(
         """

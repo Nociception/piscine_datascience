@@ -1,6 +1,7 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
 from psycopg.sql import SQL, Identifier
+from sqli_detection import sqli_detection
 
 
 @psycopg_connection_handler()
@@ -13,6 +14,13 @@ def create_table(
     Create a table (if it does not exist) in PostgreSQL,
     according to the args.
     """
+
+    sqli_detection(table_name)
+    for elt in headers:
+        sqli_detection(elt)
+    for elt in column_types:
+        sqli_detection(elt)
+
 
     column_definitions = []
     for header, column_type in zip(headers, column_types):

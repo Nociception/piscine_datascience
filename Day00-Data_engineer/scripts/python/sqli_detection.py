@@ -1,8 +1,11 @@
 import re
 
 
-def sqli_detection(arg: str) -> bool:
+def sqli_detection(arg: str) -> None:
     """DOCSTRING"""
+
+    if arg is None:
+        return
 
     SQLI_PATTERNS = [
         r"(--|\#|/\*.*\*/)",
@@ -17,6 +20,8 @@ def sqli_detection(arg: str) -> bool:
     ]
 
     SQLI_REGEX = re.compile("|".join(SQLI_PATTERNS), re.IGNORECASE)
+
+    print(f"########################{arg}#########################")
 
     if bool(SQLI_REGEX.search(arg)):
         raise ValueError(

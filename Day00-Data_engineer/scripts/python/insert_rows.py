@@ -1,7 +1,7 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
 from psycopg.sql import SQL, Identifier, Placeholder
-
+from sqli_detection import sqli_detection
 
 @psycopg_connection_handler()
 def insert_rows(
@@ -11,6 +11,11 @@ def insert_rows(
     files_involved: str | None = None
 ) -> QueryInfo:
     """DOCSTRING"""
+
+    sqli_detection(table_name)
+    sqli_detection(files_involved)
+    for elt in headers:
+        sqli_detection(elt)
 
     columns_sql = [Identifier(col) for col in headers]
 

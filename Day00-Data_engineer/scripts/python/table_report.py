@@ -1,5 +1,6 @@
 from table_exists import table_exists
 from psycopg.sql import SQL, Identifier
+from sqli_detection import sqli_detection
 import psycopg, os
 
 
@@ -24,6 +25,9 @@ def table_report(
         raise psycopg.OperationalError(
             f"{logs_table} table does not exist."
         )
+
+    # sqli_detection(table_name)
+    # sqli_detection(logs_table)
 
     query = SQL(
         "SELECT * FROM {} WHERE table_name = %s;"

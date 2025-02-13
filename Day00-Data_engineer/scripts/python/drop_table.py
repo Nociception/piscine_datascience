@@ -1,5 +1,6 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
+from sqli_detection import sqli_detection
 from psycopg.sql import SQL, Identifier
 import sys
 
@@ -9,6 +10,8 @@ def drop_table(
     table_name: str
 ) -> QueryInfo:
     """DOCSTRING"""
+
+    sqli_detection(table_name)
 
     drop_query = SQL("DROP TABLE {}").format(
         Identifier(table_name)

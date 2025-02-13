@@ -1,6 +1,7 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
 from psycopg.sql import SQL, Identifier, Literal
+from sqli_detection import sqli_detection
 
 
 @psycopg_connection_handler()
@@ -9,6 +10,9 @@ def import_csv_to_table(
     csv_path: str
 ) -> QueryInfo:
     """DOCSTRING"""
+
+    sqli_detection(table_name)
+    sqli_detection(csv_path)
 
     copy_query = SQL("""
         COPY {} FROM {}
