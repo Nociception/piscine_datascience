@@ -1,4 +1,6 @@
 import psycopg
+from psycopg.sql import SQL, Literal
+
 
 def table_exists(
     cursor: psycopg.Cursor,
@@ -6,13 +8,15 @@ def table_exists(
 ) -> bool:
     """DOCSTRING"""
 
-    cursor.execute(
-        f"""
+    query = SQL(
+        """
         SELECT EXISTS (
-            SELECT FROM information_schema.tables 
-            WHERE table_name = '{table_name}'
+            SELECT FROM information_schema.tables
+            WHERE table_name = {}
         );
         """
-    )
+    ).format(Literal(table_name))
+
+    cursor.execute(query)
 
     return cursor.fetchone()[0]

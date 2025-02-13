@@ -1,5 +1,6 @@
 #TODO LIST
 # check every sql query (fix the remaining ones)
+# write test for each sql query, if they are sqli protected
 # use regex everywhere ?
 # as_string in the decorator only for print ? SQL object can be used directly as such in cursor.execute() ?
 # write down and rm_container rules
