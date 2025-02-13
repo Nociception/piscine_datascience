@@ -1,16 +1,15 @@
 #TODO
-# sql injection
-
-# write down an rm_container rules
+# write a sqli test scenario
+# write down and rm_container rules
 # check invalid option -W (it should be there, but it currently leads to an error)
 # color and clean log messages
-# check every commands in the day00 ; also complete the .PHONY
+# check every commands in the day00 ; also update the .PHONY
 # clean commented lines in the code
 # check useless/ghost makefile variable
-# write a docstring for this makefile
+# write a short docstring for this makefile
 # write the help rule
-# flake8
 # check again every python function DOCSTRING
+# flake8
 
 # Makefile
 

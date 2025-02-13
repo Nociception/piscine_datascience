@@ -8,24 +8,16 @@ def insert_rows(
     table_name: str,
     headers: list[str],
     rows: list[tuple],
-    files_involved: str|None=None
+    files_involved: str | None = None
 ) -> QueryInfo:
     """DOCSTRING"""
 
-    columns_sql = []
-    for col in headers:
-        columns_sql.append(Identifier(col))
+    columns_sql = [Identifier(col) for col in headers]
 
     placeholders_list = []
-    for row in rows:
-        row_placeholders = []
-        for _ in row:
-            row_placeholders.append(Placeholder())
-        placeholders_list.append(
-            SQL("({})").format(
-                SQL(", ").join(row_placeholders)
-            )
-        )
+    for _ in rows:
+        row_placeholders = [Placeholder() for _ in headers]
+        placeholders_list.append(SQL("({})").format(SQL(", ").join(row_placeholders)))
 
     insert_query = SQL(
         "INSERT INTO {} ({}) VALUES {}"
@@ -39,5 +31,6 @@ def insert_rows(
         sql_query=insert_query,
         modification_type="INSERT",
         table_name=table_name,
-        files_involved=files_involved
+        files_involved=files_involved,
+        values=rows
     )

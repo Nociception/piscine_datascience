@@ -41,17 +41,14 @@ def psycopg_connection_handler():
                 sql_string = query_info.sql_query
                 if isinstance(query_info.sql_query, SQL):
                     sql_string = query_info.sql_query.as_string(cursor)
-                cursor.execute(sql_string)
+
+                if query_info.values:
+                    flattened_values = [item for row in query_info.values for item in row]
+                    cursor.execute(sql_string, flattened_values)
+                else:
+                    cursor.execute(sql_string)
+
                 print("Query executed.")
-
-
-                # if query_info and query_info.sql_query:
-                #     cursor.execute(query_info.sql_query)
-                #     print("Query executed.")
-                # else:
-                #     raise psycopg.OperationalError(
-                #         "QueryInfo object, or its query attributes is None."
-                #     )
 
 
 
