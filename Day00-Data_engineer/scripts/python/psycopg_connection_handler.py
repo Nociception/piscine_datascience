@@ -4,6 +4,7 @@ import psycopg
 from count_rows_table import count_rows_table
 from logs_table_filler import logs_table_filler
 from proceed_after_table_report import proceed_after_table_report
+from psycopg.sql import SQL
 
 
 def psycopg_connection_handler():
@@ -35,13 +36,24 @@ def psycopg_connection_handler():
                 ):
                     return
 
-                if query_info and query_info.sql_query:
-                    cursor.execute(query_info.sql_query)
-                    print("Query executed.")
-                else:
-                    raise psycopg.OperationalError(
-                        "QueryInfo object, or its query attributes is None."
-                    )
+
+
+                sql_string = query_info.sql_query
+                if isinstance(query_info.sql_query, SQL):
+                    sql_string = query_info.sql_query.as_string(cursor)
+                cursor.execute(sql_string)
+                print("Query executed.")
+
+
+                # if query_info and query_info.sql_query:
+                #     cursor.execute(query_info.sql_query)
+                #     print("Query executed.")
+                # else:
+                #     raise psycopg.OperationalError(
+                #         "QueryInfo object, or its query attributes is None."
+                #     )
+
+
 
                 final_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):

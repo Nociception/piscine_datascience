@@ -1,21 +1,6 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
-from datetime import datetime
-import os
-
-
-def format_value(value):
-    """DOCSTRING"""
-
-    if value is None:
-        return "NULL"
-    if isinstance(value, str):
-        return f"'{value}'"
-    if isinstance(value, (int, float)):
-        return str(value)
-    if isinstance(value, datetime):
-        return f"'{value.strftime('%Y-%m-%d %H:%M:%S')}'"
-    raise ValueError(f"Unsupported data type: {type(value)}")
+from psycopg.sql import SQL, Identifier, Placeholder
 
 
 @psycopg_connection_handler()
@@ -23,23 +8,36 @@ def insert_rows(
     table_name: str,
     headers: list[str],
     rows: list[tuple],
+    files_involved: str|None=None
 ) -> QueryInfo:
     """DOCSTRING"""
 
-    columns = ", ".join(headers)
-    formatted_values = ", ".join(
-        f"({', '.join(format_value(value) for value in row)})"
-        for row in rows
-    )
+    columns_sql = []
+    for col in headers:
+        columns_sql.append(Identifier(col))
 
-    insert_query = f"""
-        INSERT INTO {table_name} ({columns})
-        VALUES {formatted_values};
-    """
+    placeholders_list = []
+    for row in rows:
+        row_placeholders = []
+        for _ in row:
+            row_placeholders.append(Placeholder())
+        placeholders_list.append(
+            SQL("({})").format(
+                SQL(", ").join(row_placeholders)
+            )
+        )
+
+    insert_query = SQL(
+        "INSERT INTO {} ({}) VALUES {}"
+    ).format(
+        Identifier(table_name),
+        SQL(", ").join(columns_sql),
+        SQL(", ").join(placeholders_list)
+    )
 
     return QueryInfo(
         sql_query=insert_query,
         modification_type="INSERT",
         table_name=table_name,
-        files_involved=os.getenv("EX01_PY")
+        files_involved=files_involved
     )

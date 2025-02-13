@@ -51,7 +51,8 @@ def main():
     insert_rows(
         TABLE_NAME,
         HEADERS,
-        ROWS
+        ROWS,
+        os.getenv("EX01_PY")
     )
 
 if __name__ == "__main__":

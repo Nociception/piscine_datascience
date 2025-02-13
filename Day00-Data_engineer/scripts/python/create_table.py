@@ -1,5 +1,7 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
+from psycopg.sql import SQL, Identifier
+
 
 @psycopg_connection_handler()
 def create_table(
@@ -12,14 +14,16 @@ def create_table(
     according to the args.
     """
 
-    columns = ", ".join(
-        f"{header} {column_type}"
-        for header, column_type in zip(headers, column_types)
-    )
+    column_definitions = []
+    for header, column_type in zip(headers, column_types):
+        column_definitions.append(SQL("{} {}").format(
+            Identifier(header), SQL(column_type))
+        )
 
-    create_table_query = f"""
-    CREATE TABLE {table_name} ({columns});
-    """
+    columns_sql = SQL(", ").join(column_definitions)
+    create_table_query = SQL("CREATE TABLE {} ({})").format(
+        Identifier(table_name), columns_sql
+    )
 
     return QueryInfo(
         sql_query=create_table_query,

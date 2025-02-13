@@ -1,7 +1,6 @@
 from psycopg_connection_handler import psycopg_connection_handler
-from table_exists import table_exists
-from get_psycopg_connection import get_psycopg_connection
 from QueryInfo import QueryInfo
+from psycopg.sql import SQL, Identifier
 import sys
 
 
@@ -11,8 +10,12 @@ def drop_table(
 ) -> QueryInfo:
     """DOCSTRING"""
 
+    drop_query = SQL("DROP TABLE {}").format(
+        Identifier(table_name)
+    )
+
     return QueryInfo(
-        sql_query=f"""DROP TABLE {table_name};""",
+        sql_query=drop_query,
         modification_type="DROP",
         table_name=table_name,
         files_involved=None

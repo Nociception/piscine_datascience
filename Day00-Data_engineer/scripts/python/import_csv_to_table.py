@@ -1,18 +1,20 @@
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
-from pathlib import Path
+from psycopg.sql import SQL, Identifier, Literal
+
 
 @psycopg_connection_handler()
 def import_csv_to_table(
     table_name: str,
     csv_path: str
-) -> None:
-    """Imports a CSV file into a PostgreSQL table."""
+) -> QueryInfo:
+    """DOCSTRING"""
 
-    copy_query = f"""
-    COPY {table_name} FROM '{csv_path}'
-    DELIMITER ',' CSV HEADER;
-    """
+    copy_query = SQL("""
+        COPY {} FROM {}
+        DELIMITER ',' CSV HEADER;
+    """).format(Identifier(table_name), Literal(csv_path))
+
     print(f"Importing data from {csv_path} into {table_name}...")
     
     return QueryInfo(
