@@ -9,10 +9,7 @@ def ellipse(
 ) -> str:
     """DOCSTRING"""
 
-    if len(s) <  threshold:
-        return s
-
-    return s[:threshold - 3] + '...'
+    return s if len(s) < threshold else s[:threshold - 3] + '...'
 
 
 def table_report(

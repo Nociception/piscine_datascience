@@ -1,10 +1,10 @@
 from functools import wraps
 from get_psycopg_connection import get_psycopg_connection
-import psycopg
 from count_rows_table import count_rows_table
 from logs_table_filler import logs_table_filler
 from proceed_after_table_report import proceed_after_table_report
 from psycopg.sql import SQL
+import psycopg
 
 
 def psycopg_connection_handler():
@@ -36,8 +36,6 @@ def psycopg_connection_handler():
                 ):
                     return
 
-
-
                 sql_string = query_info.sql_query
                 if isinstance(query_info.sql_query, SQL):
                     sql_string = query_info.sql_query.as_string(cursor)
@@ -47,10 +45,7 @@ def psycopg_connection_handler():
                     cursor.execute(sql_string, flattened_values)
                 else:
                     cursor.execute(sql_string)
-
                 print("Query executed.")
-
-
 
                 final_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):

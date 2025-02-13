@@ -1,5 +1,5 @@
-#TODO
-# write a sqli test scenario
+#TODO LIST
+# check every sql query (fix the remaining ones)
 # write down and rm_container rules
 # check invalid option -W (it should be there, but it currently leads to an error)
 # color and clean log messages
@@ -10,6 +10,7 @@
 # write the help rule
 # check again every python function DOCSTRING
 # flake8
+
 
 # Makefile
 
@@ -89,32 +90,6 @@ up: env unzip
 	make rebuild_image SERVICE=<service_name>\n\n"; \
 
 
-drop:
-	@if [ -z "$(TABLE)" ]; then \
-		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
-		exit 1; \
-	fi
-	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
-
-
-rebuild_image:
-	@if [ -z "$(SERVICE)" ]; then \
-		printf "ERROR: No service name provided!\n \
-		Usage: make rebuild_image SERVICE=<service_name>\n"; \
-		exit 1; \
-	fi
-
-	@if [ "$(SERVICE)" = "$(PYTHON_CONTAINER)" ]; then \
-		docker-compose kill $(PYTHON_CONTAINER); \
-	else \
-		docker-compose stop $(SERVICE); \
-	fi
-
-	docker-compose build $(SERVICE)
-	docker-compose up -d $(SERVICE)
-	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
-
-
 env:
 	@if [ -f .env ]; then \
 		echo ".env file already exists. Skipping creation."; \
@@ -165,6 +140,36 @@ env:
 	fi
 
 
+sqli: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/vulnerable_sql.py
+
+
+drop:
+	@if [ -z "$(TABLE)" ]; then \
+		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
+		exit 1; \
+	fi
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
+
+
+rebuild_image:
+	@if [ -z "$(SERVICE)" ]; then \
+		printf "ERROR: No service name provided!\n \
+		Usage: make rebuild_image SERVICE=<service_name>\n"; \
+		exit 1; \
+	fi
+
+	@if [ "$(SERVICE)" = "$(PYTHON_CONTAINER)" ]; then \
+		docker-compose kill $(PYTHON_CONTAINER); \
+	else \
+		docker-compose stop $(SERVICE); \
+	fi
+
+	docker-compose build $(SERVICE)
+	docker-compose up -d $(SERVICE)
+	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
+
+
 docker_checks:
 	@printf "\n"
 	docker ps
@@ -191,13 +196,6 @@ wait_for_postgres:
 		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
 	done
 	@printf "\nPostgreSQL is ready!\n\n"
-# pg_isready is postgresql tool which allows to connect to psql without authentication
-# in order to retrieve availability information
-# (useful to avoid to get error because of a too soon connection attempt).
-# Return to the shell:
-# - 0 : connection accepted
-# - 1 : connection refused
-# - 0 : no response from the psql server
 
 
 down:
