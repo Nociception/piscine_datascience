@@ -17,7 +17,9 @@ def insert_rows(
     placeholders_list = []
     for _ in rows:
         row_placeholders = [Placeholder() for _ in headers]
-        placeholders_list.append(SQL("({})").format(SQL(", ").join(row_placeholders)))
+        placeholders_list.append(
+            SQL("({})").format(SQL(", ").join(row_placeholders))
+        )
 
     insert_query = SQL(
         "INSERT INTO {} ({}) VALUES {}"

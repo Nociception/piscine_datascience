@@ -1,8 +1,8 @@
 from QueryInfo import QueryInfo
-import psycopg
 from pathlib import Path
 from table_exists import table_exists
-import os
+import psycopg, os
+from psycopg.sql import SQL, Identifier
 
 
 def logs_table_filler(
@@ -24,16 +24,16 @@ def logs_table_filler(
     table_name = query_info.table_name
     if table_name != logs_table:
         if table_exists(cursor, logs_table):
-            log_query = f"""
-            INSERT INTO {logs_table} (
-                table_name,
-                last_modification,
-                modification_type,
-                files_involved,
-                row_diff
-            )
-            VALUES (%s, now(), %s, %s, %s)
-            """
+            log_query = SQL("""
+                INSERT INTO {} (
+                    table_name,
+                    last_modification,
+                    modification_type,
+                    files_involved,
+                    row_diff
+                )
+                VALUES (%s, now(), %s, %s, %s)
+            """).format(Identifier(logs_table))
 
             params = (
                 table_name,
@@ -44,7 +44,11 @@ def logs_table_filler(
                 row_diff
             )
 
-            print(f"Logging action:\n{log_query}\nParams: {params}")
+            print(
+                f"Logging action:\n"
+                f"{log_query.as_string(cursor)}\n"
+                f"Params: {params}"
+            )
             cursor.execute(log_query, params)
         else:
             print(f"{logs_table} table does not exist, skipping logging.")

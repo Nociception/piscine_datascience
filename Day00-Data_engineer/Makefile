@@ -1,11 +1,14 @@
 #TODO LIST
 # check every sql query (fix the remaining ones)
+# use regex everywhere ?
+# as_string in the decorator only for print ? SQL object can be used directly as such in cursor.execute() ?
 # write down and rm_container rules
+# import os, re, psycopg (same line, not several imports)
 # check invalid option -W (it should be there, but it currently leads to an error)
 # color and clean log messages
 # check every commands in the day00 ; also update the .PHONY
 # clean commented lines in the code
-# check useless/ghost makefile variable
+# check useless/ghost makefile variables
 # write a short docstring for this makefile
 # write the help rule
 # check again every python function DOCSTRING
