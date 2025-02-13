@@ -1,6 +1,7 @@
-import psycopg
-import os
 from table_exists import table_exists
+from psycopg.sql import SQL, Identifier
+import psycopg, os
+
 
 
 def ellipse(
@@ -24,7 +25,9 @@ def table_report(
             f"{logs_table} table does not exist."
         )
 
-    query = f"SELECT * FROM {os.getenv('LOGS_TABLE')} WHERE table_name = %s;"
+    query = SQL(
+        "SELECT * FROM {} WHERE table_name = %s;"
+    ).format(Identifier(logs_table))
     cursor.execute(query, (table_name,))
 
     log_entries = cursor.fetchall()
