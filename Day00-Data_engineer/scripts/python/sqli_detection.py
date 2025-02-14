@@ -21,8 +21,6 @@ def sqli_detection(arg: str) -> None:
 
     SQLI_REGEX = re.compile("|".join(SQLI_PATTERNS), re.IGNORECASE)
 
-    print(f"########################{arg}#########################")
-
     if bool(SQLI_REGEX.search(arg)):
         raise ValueError(
             "Wrong argument."

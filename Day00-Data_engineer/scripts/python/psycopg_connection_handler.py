@@ -4,6 +4,7 @@ from count_rows_table import count_rows_table
 from logs_table_filler import logs_table_filler
 from proceed_after_table_report import proceed_after_table_report
 from psycopg.sql import SQL
+# from logger import logger
 import psycopg
 
 
@@ -45,7 +46,8 @@ def psycopg_connection_handler():
                     cursor.execute(sql_string, flattened_values)
                 else:
                     cursor.execute(sql_string)
-                print("Query executed.")
+                # logger.debug("Query executed.")
+
 
                 final_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):

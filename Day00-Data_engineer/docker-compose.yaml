@@ -81,6 +81,7 @@ services:
       EX01_TABLE: ${EX01_TABLE}
       EX02_TABLE: ${EX02_TABLE}
       EX02_CSV_FILE: ${EX02_CSV_FILE}
+      PY_LOG_LEVEL: ${PY_LOG_LEVEL}
     networks:
       - ${DOCKER_NETWORK}
     command: ["bash"]

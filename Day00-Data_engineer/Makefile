@@ -44,6 +44,7 @@ POSTGRES_PORT = 5432
 ADMINER_SYSTEM = PostgreSQL
 ADMINER_PORT = 8080
 DOCKER_NETWORK = network
+PY_LOG_LEVEL = INFO
 #  Containers' name
 POSTGRES_CONTAINER = postgres
 PYTHON_CONTAINER = python
@@ -115,6 +116,7 @@ env:
 		echo "DOCKER_NETWORK=$(DOCKER_NETWORK)" >> .env; \
 		echo "LOGS_TABLE=$(LOGS_TABLE)" >> .env; \
 		echo "POSTGRES_CONTAINER=$(POSTGRES_CONTAINER)" >> .env; \
+		echo "PY_LOG_LEVEL=$(PY_LOG_LEVEL)" >> .env; \
 		echo "POSTGRES_DB=$(POSTGRES_DB)" >> .env; \
 		echo "POSTGRES_HOST=$(POSTGRES_HOST)" >> .env; \
 		echo "POSTGRES_PASSWORD=$(POSTGRES_PASSWORD)" >> .env; \
