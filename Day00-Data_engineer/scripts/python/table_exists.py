@@ -8,7 +8,7 @@ def table_exists(
 ) -> bool:
     """DOCSTRING"""
 
-    # sqli_detection(table_name)
+    sqli_detection(table_name)
 
     query = SQL(
         """

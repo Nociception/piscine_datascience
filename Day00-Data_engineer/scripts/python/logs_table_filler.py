@@ -48,7 +48,8 @@ def logs_table_filler(
             sqli_detection(logs_table)
             sqli_detection(table_name)
             sqli_detection(query_info.modification_type)
-            sqli_detection(Path(query_info.files_involved).name)
+            if query_info.files_involved is not None:
+                sqli_detection(Path(query_info.files_involved).name)
             # if not isinstance(row_diff, int):
             #     raise ValueError("row diff must be an int.")
 

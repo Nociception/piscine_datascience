@@ -1,6 +1,4 @@
 #TODO LIST
-# use regex everywhere ?
-# write test for each sql query, if they are sqli protected
 # as_string in the decorator only for print ? SQL object can be used directly as such in cursor.execute() ?
 # write down and rm_container rules
 # import os, re, psycopg (same line, not several imports)

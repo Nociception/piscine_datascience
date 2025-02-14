@@ -26,8 +26,8 @@ def table_report(
             f"{logs_table} table does not exist."
         )
 
-    # sqli_detection(table_name)
-    # sqli_detection(logs_table)
+    sqli_detection(table_name)
+    sqli_detection(logs_table)
 
     query = SQL(
         "SELECT * FROM {} WHERE table_name = %s;"
