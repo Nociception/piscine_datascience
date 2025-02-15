@@ -5,7 +5,14 @@ import os
 
 
 def main():
-    """DOCSTRING"""
+    """
+    Creates a table and inserts predefined rows into it.
+
+    - Reads table name from environment variable.
+    - Defines column headers and column types.
+    - Creates the table.
+    - Inserts a predefined dataset into the table.
+    """
 
     TABLE_NAME = os.getenv("EX01_TABLE")
 

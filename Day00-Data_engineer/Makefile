@@ -12,6 +12,8 @@
 # Remind that if you change a variable written in the .env,
 # you must `rm .env ; make env`.
 
+
+#                           VARIABLES
 # Makefile
 MAKEFLAGS += --no-print-directory
 .DEFAULT_GOAL := help
@@ -70,6 +72,8 @@ PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) -W
 PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
 DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
+
+#                           RULES
 
 .PHONY: adminer docker_checks down download drop end env \
 		ex00 ex01 ex02 ex03 ex04 \
@@ -210,7 +214,7 @@ fclean:
 
 
 help:
-	@printf "On the TODO list"
+	@bash $(SCRIPTS_DIR)/$(MAKEFILE_DIR)/help.sh $(MAKECMDGOALS)
 
 
 postgres_container:

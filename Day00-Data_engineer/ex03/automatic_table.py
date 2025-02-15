@@ -3,8 +3,9 @@ from import_csv_with_table_creation import import_csv_with_table_creation
 
 def main():
     """
-    Connects to the PostgreSQL db using environment variables and
-    creates tables based on CSV files.
+    - Defines the path to the CSV directory inside the container.
+    - Specifies the column types for the table.
+    - Calls the function to handle table creation and data import.
     """
 
     CONTAINER_CSV_DIR = "/data/customer"

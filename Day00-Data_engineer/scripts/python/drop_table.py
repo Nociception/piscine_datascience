@@ -10,7 +10,15 @@ import sys
 def drop_table(
     table_name: str
 ) -> QueryInfo:
-    """DOCSTRING"""
+    """
+    Drops (deletes) a table from the PostgreSQL database.
+
+    Args:
+        table_name (str): The name of the table to drop.
+
+    Returns:
+        QueryInfo: An object containing query metadata.
+    """
 
     sqli_detection(table_name)
 
@@ -27,7 +35,11 @@ def drop_table(
 
 
 def main() -> None:
-    """DOCSTRING"""
+    """
+    Entry point to drop a table using command-line arguments.
+
+    Expects one argument: the name of the table to drop.
+    """
 
     if len(sys.argv) != 2:
         logger.error("Usage: python3 drop_table.py <table_name>")

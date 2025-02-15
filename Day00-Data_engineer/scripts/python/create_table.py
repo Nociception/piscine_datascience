@@ -10,7 +10,17 @@ def create_table(
     headers: list[str],
     column_types: list[str],
 ) -> QueryInfo:
-    """DOCSTRING"""
+    """
+    Creates a table in PostgreSQL with specified columns and types.
+
+    Args:
+        table_name (str): The name of the table to create.
+        headers (list[str]): List of column names.
+        column_types (list[str]): Corresponding list of column data types.
+
+    Returns:
+        QueryInfo: An object containing query metadata.
+    """
 
     sqli_detection(table_name)
     for elt in headers:

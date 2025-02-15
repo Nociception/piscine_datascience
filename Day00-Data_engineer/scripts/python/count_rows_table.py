@@ -7,7 +7,19 @@ def count_rows_table(
     cursor: psycopg.Cursor,
     table_name: str
 ) -> int:
-    """DOCSTRING"""
+    """
+    Counts the number of rows in a given table.
+
+    Args:
+        cursor (psycopg.Cursor): The database cursor.
+        table_name (str): The name of the table to count rows from.
+
+    Returns:
+        int: The number of rows in the table.
+
+    Raises:
+        psycopg.OperationalError: If the table does not exist.
+    """
 
     sqli_detection(table_name)
 

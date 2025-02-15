@@ -8,7 +8,14 @@ import psycopg, os
 
 
 def main() -> None:
-    """DOCSTRING"""
+    """
+    Logs table creation and data import events for a specific table.
+
+    - Checks if the logs table and the target table exist.
+    - Logs the creation event.
+    - Logs the data import event if the table contains data.
+    - Commits the transaction.
+    """
 
     connection = None
     try:
