@@ -1,6 +1,3 @@
-#TODO LIST
-# write the help rule
-
 # ============================================================
 #                           MAKEFILE
 # ============================================================
@@ -212,7 +209,7 @@ fclean:
 
 
 help:
-	@bash $(SCRIPTS_DIR)/$(MAKEFILE_DIR)/help.sh $(MAKECMDGOALS)
+	@bash $(SCRIPTS_DIR)/$(MAKEFILE_DIR)/help.sh $(RULE)
 
 
 postgres_container:
