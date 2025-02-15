@@ -24,8 +24,8 @@ def create_table(
         column_definitions.append(SQL("{} {}").format(
             Identifier(header), SQL(column_type))
         )
-
     columns_sql = SQL(", ").join(column_definitions)
+
     create_table_query = SQL("CREATE TABLE {} ({})").format(
         Identifier(table_name), columns_sql
     )

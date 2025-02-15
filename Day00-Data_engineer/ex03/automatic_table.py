@@ -8,7 +8,7 @@ def main():
     """
 
     CONTAINER_CSV_DIR = "/data/customer"
-    column_types = [
+    COLUMN_TYPES = [
         "TIMESTAMP WITH TIME ZONE",
         "VARCHAR(50)",
         "INT",
@@ -19,7 +19,7 @@ def main():
 
     import_csv_with_table_creation(
         CONTAINER_CSV_DIR,
-        column_types
+        COLUMN_TYPES
     )
 
 

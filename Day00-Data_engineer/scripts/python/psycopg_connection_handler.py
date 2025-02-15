@@ -47,7 +47,6 @@ def psycopg_connection_handler():
                     cursor.execute(query_info.sql_query)
                 logger.info("Query executed.")
 
-
                 final_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):
                     final_count = count_rows_table(cursor, table_name)

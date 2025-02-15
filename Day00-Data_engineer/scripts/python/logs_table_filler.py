@@ -25,16 +25,18 @@ def logs_table_filler(
     table_name = query_info.table_name
     if table_name != logs_table:
         if table_exists(cursor, logs_table):
-            log_query = SQL("""
-                INSERT INTO {} (
-                    table_name,
-                    last_modification,
-                    modification_type,
-                    files_involved,
-                    row_diff
-                )
+            log_query = SQL(
+                """
+                    INSERT INTO {} (
+                        table_name,
+                        last_modification,
+                        modification_type,
+                        files_involved,
+                        row_diff
+                    )
                 VALUES (%s, now(), %s, %s, %s)
-            """).format(Identifier(logs_table))
+                """
+            ).format(Identifier(logs_table))
 
             params = (
                 table_name,

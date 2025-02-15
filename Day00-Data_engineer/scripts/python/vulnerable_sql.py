@@ -25,7 +25,10 @@ def vulnerable_table_report(
             f"{logs_table} table does not exist."
         )
 
-    query = f"SELECT * FROM {os.getenv('LOGS_TABLE')} WHERE table_name = '{table_name}';"
+    query = f"""
+        SELECT * FROM {os.getenv('LOGS_TABLE')}
+        WHERE table_name = '{table_name}';
+    """
     cursor.execute(query)
 
     log_entries = cursor.fetchall()
