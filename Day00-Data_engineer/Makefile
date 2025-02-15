@@ -1,7 +1,5 @@
 #TODO LIST
 # write the help rule
-# DOCSTRING
-# flake8
 
 # ============================================================
 #                           MAKEFILE
@@ -13,7 +11,7 @@
 # you must `rm .env ; make env`.
 
 
-#                           VARIABLES
+# ========================= VARIABLES ========================
 # Makefile
 MAKEFLAGS += --no-print-directory
 .DEFAULT_GOAL := help
@@ -73,7 +71,7 @@ PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
 DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
 
-#                           RULES
+# ========================= RULES =========================
 
 .PHONY: adminer docker_checks down download drop end env \
 		ex00 ex01 ex02 ex03 ex04 \
