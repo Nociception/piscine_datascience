@@ -1,6 +1,5 @@
 from get_psycopg_connection import get_psycopg_connection
 from table_exists import table_exists
-from pathlib import Path
 from logs_table_filler import logs_table_filler
 from QueryInfo import QueryInfo
 from count_rows_table import count_rows_table

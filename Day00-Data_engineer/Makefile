@@ -1,7 +1,6 @@
 #TODO LIST
 # as_string in the decorator only for print ? SQL object can be used directly as such in cursor.execute() ?
 # write down and rm_container rules
-# import os, re, psycopg (same line, not several imports)
 # check invalid option -W (it should be there, but it currently leads to an error)
 # check every commands in the day00 ; also update the .PHONY
 # clean commented lines in the code

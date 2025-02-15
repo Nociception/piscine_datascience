@@ -1,7 +1,7 @@
-import psycopg
 from QueryInfo import QueryInfo
 from table_report import table_report
 from logger import logger
+import psycopg
 
 
 def proceed_after_table_report(
