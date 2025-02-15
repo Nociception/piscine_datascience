@@ -1,11 +1,16 @@
 #TODO LIST
-# clean commented lines in the code
-# check again every python function DOCSTRING
-# check useless/ghost makefile variables
-# write a short docstring for this makefile
 # write the help rule
+# DOCSTRING
 # flake8
 
+# ============================================================
+#                           MAKEFILE
+# ============================================================
+# This Makefile is designed to automate every task in this day00 project:
+# Variables are already properly set, so that you can just type
+# Makefile's rules. Read more about them with `make help`.
+# Remind that if you change a variable written in the .env,
+# you must `rm .env ; make env`.
 
 # Makefile
 MAKEFLAGS += --no-print-directory
