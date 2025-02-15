@@ -1,5 +1,4 @@
 #TODO LIST
-# check every commands in the day00 ; also update the .PHONY
 # clean commented lines in the code
 # check again every python function DOCSTRING
 # check useless/ghost makefile variables
@@ -28,7 +27,6 @@ EX03_DIR = ex03
 EX03_PY = automatic_table.py
 EX04_DIR = ex04
 EX04_PY = items_table.py
-EXAMPLE_TABLE = example_table
 LOGS_TABLE = logs
 
 # Docker
@@ -50,7 +48,6 @@ PYTHON_CONTAINER = python
 DATA_VOLUME = data
 PYTHON_APP_DIR = app
 #  Files
-CHECK_LOG_TABLE = check_log_table.py
 DC_COMPOSE = docker-compose.yaml
 DOWN_SH = down.sh
 EX02_SQL = ex02/table.sql
@@ -69,36 +66,49 @@ PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
 DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
 
-.PHONY: up psql down rm_volumes env end fclean \
-		docker_checks postgres_container python_container rebuild_image\
-		ex00 \
-		ex01-setup ex01-clean \
-		download unzip ex02 \
-		ex03 \
-		ex04 \
+.PHONY: adminer docker_checks down download drop end env \
+		ex00 ex01 ex02 ex03 ex04 \
+		fclean help postgres_container psql python_container \
+		rebuild_image rm_volumes sqli unzip up wait_for_postgres \
 
 
-wait_for_postgres:
-	@echo "Checking if PostgreSQL is ready..."
-	@for i in {1..10}; do \
-		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) && break || sleep 2; \
-	done
-	@printf "\nPostgreSQL is ready!\n\n"
+adminer:
+	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(ADMINER_SH)
 
 
-up: env unzip
-	docker-compose -f $(DC_COMPOSE) up -d
+docker_checks:
+	@printf "\n"
+	docker ps
+	@printf "\n"
+	docker volume ls
+	@printf "\n"
+
+
+down:
+	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(DOWN_SH)
 	$(MAKE) docker_checks
-	$(MAKE) wait_for_postgres
-	$(DOCKER_PYTHON) $(SCRIPTS_DIR)/$(SETUP_LOG_TABLE)
-
-	@printf "\nReminder: if a Dockerfile has been modified, \
-	you must stop, rebuild and up it.\n \
-	make rebuild_image SERVICE=<service_name>\n\n"; \
 
 
-help:
-	@printf "On the TODO list"
+download:
+	@if [ -f $(OUTPUT_ZIP) ]; then \
+		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
+	else \
+		echo "Downloading $(OUTPUT_ZIP) from $(URL)..."; \
+		curl -o $(OUTPUT_ZIP) -L $(URL); \
+		echo "Download complete: $(OUTPUT_ZIP)"; \
+	fi
+#	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
+
+
+drop:
+	@if [ -z "$(TABLE)" ]; then \
+		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
+		exit 1; \
+	fi
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
+
+
+end: down fclean
 
 
 env:
@@ -152,106 +162,13 @@ env:
 	fi
 
 
-sqli: up
-	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/vulnerable_sql.py
-
-
-drop:
-	@if [ -z "$(TABLE)" ]; then \
-		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
-		exit 1; \
-	fi
-	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
-
-
-rebuild_image:
-	@if [ -z "$(SERVICE)" ]; then \
-		printf "ERROR: No service name provided!\n \
-		Usage: make rebuild_image SERVICE=<service_name>\n"; \
-		exit 1; \
-	fi
-
-	@if [ "$(SERVICE)" = "$(PYTHON_CONTAINER)" ]; then \
-		docker-compose kill $(PYTHON_CONTAINER); \
-	else \
-		docker-compose stop $(SERVICE); \
-	fi
-
-	docker-compose build $(SERVICE)
-	docker-compose up -d $(SERVICE)
-	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
-
-
-docker_checks:
-	@printf "\n"
-	docker ps
-	@printf "\n"
-	docker volume ls
-	@printf "\n"
-
-
-psql: up wait_for_postgres
-	$(PSQL)
-
-
-postgres_container:
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) bash
-
-
-python_container:
-	$(DOCKER_EXEC) $(PYTHON_CONTAINER) bash
-
-
-down:
-	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(DOWN_SH)
-	$(MAKE) docker_checks
-
-
-rm_volumes:
-	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(RM_VOLUMES_SH)
-
-
-download:
-	@if [ -f $(OUTPUT_ZIP) ]; then \
-		echo "$(OUTPUT_ZIP) already exists. Skipping download."; \
-	else \
-		echo "Downloading $(OUTPUT_ZIP) from $(URL)..."; \
-		curl -o $(OUTPUT_ZIP) -L $(URL); \
-		echo "Download complete: $(OUTPUT_ZIP)"; \
-	fi
-#	-L makes curl follow potential (and frequent) URL chains, in order to reach the targeted file.
-
-
-unzip: download
-	@if [ -d $(SUBJECT_DIR) ]; then \
-		echo "Directory $(SUBJECT_DIR) already exists. Skipping extraction."; \
-	elif [ -f $(OUTPUT_ZIP) ]; then \
-		echo "Extracting $(OUTPUT_ZIP)..."; \
-		unzip -o $(OUTPUT_ZIP); \
-		echo "Extraction complete: files are in $(SUBJECT_DIR)/"; \
-	else \
-		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
-	fi
-
-
-fclean:
-	rm -rf $(SUBJECT_DIR) $(OUTPUT_ZIP) $(APP_DIR_NAME) .env || true
-	$(MAKE) rm_volumes
-
-
-end: down fclean
-
-
-adminer:
-	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(ADMINER_SH)
-
-
 ex00: up psql
 
 
 ex01: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX01_DIR)/$(EX01_PY)
 	@$(MAKE) adminer
+
 
 ex02: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_LOGS_BEFORE_PY)
@@ -282,8 +199,79 @@ ex04: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX04_DIR)/$(EX04_PY)
 
 
-#BIG CLEAN
-# docker stop $(docker ps -aq)
-# docker rm -f $(docker ps -aq)
-# docker volume rm $(docker volume ls -q)
-# docker rmi -f $(docker images -aq)
+fclean:
+	rm -rf $(SUBJECT_DIR) $(OUTPUT_ZIP) $(APP_DIR_NAME) .env || true
+	$(MAKE) rm_volumes
+
+
+help:
+	@printf "On the TODO list"
+
+
+postgres_container:
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) bash
+
+
+psql: up wait_for_postgres
+	$(PSQL)
+
+
+python_container:
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER) bash
+
+
+rebuild_image:
+	@if [ -z "$(SERVICE)" ]; then \
+		printf "ERROR: No service name provided!\n \
+		Usage: make rebuild_image SERVICE=<service_name>\n"; \
+		exit 1; \
+	fi
+
+	@if [ "$(SERVICE)" = "$(PYTHON_CONTAINER)" ]; then \
+		docker-compose kill $(PYTHON_CONTAINER); \
+	else \
+		docker-compose stop $(SERVICE); \
+	fi
+
+	docker-compose build $(SERVICE)
+	docker-compose up -d $(SERVICE)
+	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
+
+
+rm_volumes:
+	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(RM_VOLUMES_SH)
+
+
+sqli: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/vulnerable_sql.py
+
+
+unzip: download
+	@if [ -d $(SUBJECT_DIR) ]; then \
+		echo "Directory $(SUBJECT_DIR) already exists. Skipping extraction."; \
+	elif [ -f $(OUTPUT_ZIP) ]; then \
+		echo "Extracting $(OUTPUT_ZIP)..."; \
+		unzip -o $(OUTPUT_ZIP); \
+		echo "Extraction complete: files are in $(SUBJECT_DIR)/"; \
+	else \
+		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
+	fi
+
+
+up: env unzip
+	docker-compose -f $(DC_COMPOSE) up -d
+	$(MAKE) docker_checks
+	$(MAKE) wait_for_postgres
+	$(DOCKER_PYTHON) $(SCRIPTS_DIR)/$(SETUP_LOG_TABLE)
+
+	@printf "\nReminder: if a Dockerfile has been modified, \
+	you must stop, rebuild and up it.\n \
+	make rebuild_image SERVICE=<service_name>\n\n"; \
+
+
+wait_for_postgres:
+	@echo "Checking if PostgreSQL is ready..."
+	@for i in {1..10}; do \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) && break || sleep 2; \
+	done
+	@printf "\nPostgreSQL is ready!\n\n"
