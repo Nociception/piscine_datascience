@@ -4,7 +4,8 @@ from table_exists import table_exists
 from psycopg.sql import SQL, Identifier
 from sqli_detection import sqli_detection
 from logger import logger
-import psycopg, os
+import psycopg
+import os
 
 
 def logs_table_filler(
@@ -52,8 +53,8 @@ def logs_table_filler(
                 table_name,
                 query_info.modification_type,
                 Path(query_info.files_involved).name
-                    if query_info.files_involved
-                    else None,
+                if query_info.files_involved
+                else None,
                 row_diff
             )
 

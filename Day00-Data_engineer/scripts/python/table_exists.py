@@ -2,6 +2,7 @@ from psycopg.sql import SQL, Literal
 from sqli_detection import sqli_detection
 import psycopg
 
+
 def table_exists(
     cursor: psycopg.Cursor,
     table_name: str

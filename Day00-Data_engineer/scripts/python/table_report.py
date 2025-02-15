@@ -1,8 +1,8 @@
 from table_exists import table_exists
 from psycopg.sql import SQL, Identifier
 from sqli_detection import sqli_detection
-import psycopg, os
-
+import psycopg
+import os
 
 
 def ellipse(
@@ -79,10 +79,10 @@ def table_report(
                 str(entry[4]) if entry[4] else '0'
             )
             print(" | ".join(
-                f"{ellipse(row[k], width):<{width}.{width}}"
-                for k, width in enumerate(widths.values())
+                    f"{ellipse(row[k], width):<{width}.{width}}"
+                    for k, width in enumerate(widths.values())
+                )
             )
-        )
         print()
 
     else:

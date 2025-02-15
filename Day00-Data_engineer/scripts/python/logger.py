@@ -1,5 +1,6 @@
 from colorama import Fore, Style, init
-import logging, os
+import logging
+import os
 
 
 init(autoreset=True)
@@ -12,6 +13,7 @@ LOG_COLORS = {
     "ERROR": Fore.RED,
     "CRITICAL": Fore.RED + Style.BRIGHT,
 }
+
 
 class ColoredFormatter(logging.Formatter):
     """

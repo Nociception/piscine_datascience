@@ -22,7 +22,6 @@ def proceed_after_table_report(
         bool: True if the user confirms proceeding, False otherwise.
     """
 
-
     if query_info.modification_type in ["CREATE", "DROP"]:
         return True
 

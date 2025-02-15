@@ -1,7 +1,8 @@
 from get_psycopg_connection import get_psycopg_connection
 from table_report import table_report
 from table_exists import table_exists
-import psycopg, os
+import psycopg
+import os
 
 
 def ellipse(
@@ -37,7 +38,7 @@ def vulnerable_table_report(
     Raises:
         psycopg.OperationalError: If the logs table does not exist.
     """
-    
+
     logs_table = os.getenv("LOGS_TABLE")
     if not table_exists(cursor, logs_table):
         raise psycopg.OperationalError(
@@ -77,10 +78,10 @@ def vulnerable_table_report(
                 str(entry[4]) if entry[4] else '0'
             )
             print(" | ".join(
-                f"{ellipse(row[k], width):<{width}.{width}}"
-                for k, width in enumerate(widths.values())
+                    f"{ellipse(row[k], width):<{width}.{width}}"
+                    for k, width in enumerate(widths.values())
+                )
             )
-        )
         print()
 
     else:
@@ -106,7 +107,6 @@ if __name__ == "__main__":
         print("SQLi attempt: vulnerable_table_report(\"item\' OR \'1\'=\'1\")")
         print("Result:")
         vulnerable_table_report(cursor, "item' OR '1'='1")
-
 
         print("\nWith table_report:")
         print("Normal query: table_report(\"item\")")

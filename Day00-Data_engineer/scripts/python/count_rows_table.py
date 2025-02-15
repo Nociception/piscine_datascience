@@ -3,6 +3,7 @@ from table_exists import table_exists
 from sqli_detection import sqli_detection
 import psycopg
 
+
 def count_rows_table(
     cursor: psycopg.Cursor,
     table_name: str

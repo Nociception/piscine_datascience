@@ -1,7 +1,8 @@
 from get_psycopg_connection import get_psycopg_connection
 from table_report import table_report
 from logger import logger
-import psycopg, os
+import psycopg
+import os
 
 
 def main() -> None:
@@ -12,7 +13,6 @@ def main() -> None:
         connection, cursor = get_psycopg_connection()
 
         table_report(cursor, os.getenv("EX02_TABLE"))
-
 
     except psycopg.OperationalError as e:
         logger.error(f"Database connection error: {e}")

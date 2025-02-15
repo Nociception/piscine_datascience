@@ -4,7 +4,8 @@ from logs_table_filler import logs_table_filler
 from QueryInfo import QueryInfo
 from count_rows_table import count_rows_table
 from logger import logger
-import psycopg, os
+import psycopg
+import os
 
 
 def main() -> None:
@@ -20,7 +21,7 @@ def main() -> None:
     connection = None
     try:
         connection, cursor = get_psycopg_connection()
-    
+
         logs_table = os.getenv("LOGS_TABLE")
         if not table_exists(cursor, logs_table):
             raise psycopg.OperationalError(

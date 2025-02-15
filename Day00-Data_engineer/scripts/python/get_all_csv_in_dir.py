@@ -27,6 +27,6 @@ def get_all_csv_in_dir(csv_dir: str) -> None | list[str]:
     if not csv_files:
         logger.error("No CSV files found in the CSV directory.")
         return None
-    
+
     logger.info(f"CSV files found: {csv_files}")
     return csv_files

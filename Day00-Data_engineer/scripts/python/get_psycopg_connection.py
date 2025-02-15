@@ -1,5 +1,6 @@
 from logger import logger
-import psycopg, os
+import psycopg
+import os
 
 
 def get_psycopg_connection() -> tuple[psycopg.connect, psycopg.Cursor]:

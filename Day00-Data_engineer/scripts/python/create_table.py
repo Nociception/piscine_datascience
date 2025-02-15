@@ -28,7 +28,6 @@ def create_table(
     for elt in column_types:
         sqli_detection(elt)
 
-
     column_definitions = []
     for header, column_type in zip(headers, column_types):
         column_definitions.append(SQL("{} {}").format(

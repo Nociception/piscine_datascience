@@ -3,7 +3,6 @@ from get_psycopg_connection import get_psycopg_connection
 from count_rows_table import count_rows_table
 from logs_table_filler import logs_table_filler
 from proceed_after_table_report import proceed_after_table_report
-from psycopg.sql import SQL
 from logger import logger
 import psycopg
 
@@ -37,7 +36,6 @@ def psycopg_connection_handler():
             function: A wrapper function that manages the database connection.
         """
 
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
@@ -67,7 +65,6 @@ def psycopg_connection_handler():
                     If an SQL syntax error occurs.
                 Exception: For any unexpected errors.
             """
-
 
             connection = None
             try:

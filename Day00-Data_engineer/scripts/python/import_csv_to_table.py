@@ -32,7 +32,7 @@ def import_csv_to_table(
     """).format(Identifier(table_name), Literal(csv_path))
 
     logger.info(f"Importing data from {csv_path} into {table_name}...")
-    
+
     return QueryInfo(
         sql_query=copy_query,
         modification_type="IMPORT CSV",
