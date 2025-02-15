@@ -10,10 +10,7 @@ def create_table(
     headers: list[str],
     column_types: list[str],
 ) -> QueryInfo:
-    """
-    Create a table (if it does not exist) in PostgreSQL,
-    according to the args.
-    """
+    """DOCSTRING"""
 
     sqli_detection(table_name)
     for elt in headers:

@@ -1,9 +1,10 @@
 from QueryInfo import QueryInfo
 from pathlib import Path
 from table_exists import table_exists
-import psycopg, os
 from psycopg.sql import SQL, Identifier
 from sqli_detection import sqli_detection
+from logger import logger
+import psycopg, os
 
 
 def logs_table_filler(
@@ -14,9 +15,8 @@ def logs_table_filler(
     """DOCSTRING"""
 
     if query_info is None:
-        print(
-            "Error: QueryInfo object is none. "
-            "No logging action will be done."
+        logger.info(
+            "QueryInfo object is none. No logging action will be done."
         )
         return
 
@@ -50,14 +50,14 @@ def logs_table_filler(
             sqli_detection(query_info.modification_type)
             if query_info.files_involved is not None:
                 sqli_detection(Path(query_info.files_involved).name)
-            # if not isinstance(row_diff, int):
-            #     raise ValueError("row diff must be an int.")
 
-            print(
+            logger.debug(
                 f"Logging action:\n"
                 f"{log_query.as_string(cursor)}\n"
                 f"Params: {params}"
             )
             cursor.execute(log_query, params)
         else:
-            print(f"{logs_table} table does not exist, skipping logging.")
+            logger.info(
+                f"{logs_table} table does not exist, skipping logging."
+            )

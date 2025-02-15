@@ -1,3 +1,4 @@
+from logger import logger
 from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
 from psycopg.sql import SQL, Identifier, Literal
@@ -19,7 +20,7 @@ def import_csv_to_table(
         DELIMITER ',' CSV HEADER;
     """).format(Identifier(table_name), Literal(csv_path))
 
-    print(f"Importing data from {csv_path} into {table_name}...")
+    logger.info(f"Importing data from {csv_path} into {table_name}...")
     
     return QueryInfo(
         sql_query=copy_query,

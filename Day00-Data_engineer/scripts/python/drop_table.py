@@ -2,6 +2,7 @@ from psycopg_connection_handler import psycopg_connection_handler
 from QueryInfo import QueryInfo
 from sqli_detection import sqli_detection
 from psycopg.sql import SQL, Identifier
+from logger import logger
 import sys
 
 
@@ -29,7 +30,7 @@ def main() -> None:
     """DOCSTRING"""
 
     if len(sys.argv) != 2:
-        print("Usage: python drop_table.py <table_name>")
+        logger.error("Usage: python3 drop_table.py <table_name>")
         sys.exit(1)
 
     drop_table(table_name=sys.argv[1])

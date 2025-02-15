@@ -1,7 +1,7 @@
 from get_psycopg_connection import get_psycopg_connection
-import psycopg
 from table_report import table_report
-import os
+from logger import logger
+import psycopg, os
 
 
 def main() -> None:
@@ -15,15 +15,15 @@ def main() -> None:
 
 
     except psycopg.OperationalError as e:
-        print(f"Database connection error: {e}")
+        logger.error(f"Database connection error: {e}")
     except psycopg.ProgrammingError as e:
-        print(f"Programming error in SQL query: {e}")
+        logger.error(f"Programming error in SQL query: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")
     finally:
         if connection:
             connection.close()
-            print("Database connection closed.")
+            logger.info("Database connection closed.")
 
 
 if __name__ == "__main__":

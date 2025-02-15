@@ -3,7 +3,6 @@
 # write down and rm_container rules
 # import os, re, psycopg (same line, not several imports)
 # check invalid option -W (it should be there, but it currently leads to an error)
-# color and clean log messages
 # check every commands in the day00 ; also update the .PHONY
 # clean commented lines in the code
 # check useless/ghost makefile variables
@@ -44,7 +43,7 @@ POSTGRES_PORT = 5432
 ADMINER_SYSTEM = PostgreSQL
 ADMINER_PORT = 8080
 DOCKER_NETWORK = network
-PY_LOG_LEVEL = INFO
+PY_LOG_LEVEL = WARNING
 #  Containers' name
 POSTGRES_CONTAINER = postgres
 PYTHON_CONTAINER = python

@@ -4,7 +4,7 @@ from count_rows_table import count_rows_table
 from logs_table_filler import logs_table_filler
 from proceed_after_table_report import proceed_after_table_report
 from psycopg.sql import SQL
-# from logger import logger
+from logger import logger
 import psycopg
 
 
@@ -23,7 +23,7 @@ def psycopg_connection_handler():
                 connection, cursor = get_psycopg_connection()
 
                 query_info = func(*args, **kwargs)
-                print(query_info)
+                logger.debug(query_info)
 
                 table_name = query_info.table_name
 
@@ -46,7 +46,7 @@ def psycopg_connection_handler():
                     cursor.execute(sql_string, flattened_values)
                 else:
                     cursor.execute(sql_string)
-                # logger.debug("Query executed.")
+                logger.info("Query executed.")
 
 
                 final_count = 0
@@ -61,7 +61,7 @@ def psycopg_connection_handler():
                 )
 
                 connection.commit()
-                print("Transaction committed.")
+                logger.info("Transaction committed.")
 
                 # Uncomment the following lines to debug the decorator
                 # return {
@@ -70,15 +70,15 @@ def psycopg_connection_handler():
                 # }
 
             except psycopg.OperationalError as e:
-                print(f"Database connection error: {e}")
+                logger.warning(f"Database connection error: {e}")
             except psycopg.ProgrammingError as e:
-                print(f"Programming error in SQL query: {e}")
+                logger.error(f"Programming error in SQL query: {e}")
             except Exception as e:
-                print(f"An unexpected error occurred: {e}")
+                logger.error(f"An unexpected error occurred: {e}")
             finally:
                 if connection:
                     connection.close()
-                    print("Database connection closed.")
+                    logger.info("Database connection closed.")
 
         return wrapper
     return decorator

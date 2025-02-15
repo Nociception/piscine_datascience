@@ -1,3 +1,4 @@
+from logger import logger
 import psycopg, os
 
 
@@ -11,6 +12,6 @@ def get_psycopg_connection() -> tuple[psycopg.connect, psycopg.Cursor]:
         host=os.getenv("POSTGRES_HOST"),
         port=os.getenv("POSTGRES_PORT"),
     )
-    print("Connected to the database successfully.")
+    logger.info("Connected to the database successfully.")
 
     return connection, connection.cursor()

@@ -1,6 +1,7 @@
 import psycopg
 from QueryInfo import QueryInfo
 from table_report import table_report
+from logger import logger
 
 
 def proceed_after_table_report(
@@ -12,7 +13,7 @@ def proceed_after_table_report(
     if query_info.modification_type in ["CREATE", "DROP"]:
         return True
 
-    print(query_info)
+    logger.info(query_info)
     table_report(cursor, query_info.table_name)
 
     while True:

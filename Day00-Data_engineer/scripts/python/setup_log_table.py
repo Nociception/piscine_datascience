@@ -1,9 +1,10 @@
 from create_table import create_table
+from logger import logger
 import os
 
 
 def main():
-    """Connects to PostgreSQL and ensures the 'logs' table exists."""
+    """DOCSTRING"""
 
     TABLE_NAME = os.getenv("LOGS_TABLE")
     HEADERS = [
@@ -27,7 +28,7 @@ def main():
         COLUMNS_TYPE
     )
 
-    print(f"Table {TABLE_NAME} is ready.")
+    logger.info(f"Table {TABLE_NAME} is ready.")
 
 
 if __name__ == "__main__":
