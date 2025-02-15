@@ -37,15 +37,14 @@ def psycopg_connection_handler():
                 ):
                     return
 
-                sql_string = query_info.sql_query
-                if isinstance(query_info.sql_query, SQL):
-                    sql_string = query_info.sql_query.as_string(cursor)
-
                 if query_info.values:
-                    flattened_values = [item for row in query_info.values for item in row]
-                    cursor.execute(sql_string, flattened_values)
+                    flattened_values = []
+                    for row in query_info.values:
+                        for item in row:
+                            flattened_values.append(item)
+                    cursor.execute(query_info.sql_query, flattened_values)
                 else:
-                    cursor.execute(sql_string)
+                    cursor.execute(query_info.sql_query)
                 logger.info("Query executed.")
 
 

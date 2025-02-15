@@ -21,7 +21,7 @@ ADMINER_SH = adminer.sh
 SUBJECT_DIR = subject
 SCRIPTS_DIR = scripts
 MAKEFILE_DIR = makefile
-#  Exercices
+#  Exercises
 LOGS_TABLE = logs
 EXAMPLE_TABLE = example_table
 EX01_DIR = $(SCRIPTS_DIR)
