@@ -1,17 +1,16 @@
 #TODO LIST
-# as_string in the decorator only for print ? SQL object can be used directly as such in cursor.execute() ?
-# write down and rm_container rules
-# check invalid option -W (it should be there, but it currently leads to an error)
 # check every commands in the day00 ; also update the .PHONY
 # clean commented lines in the code
+# check again every python function DOCSTRING
 # check useless/ghost makefile variables
 # write a short docstring for this makefile
 # write the help rule
-# check again every python function DOCSTRING
 # flake8
 
 
 # Makefile
+MAKEFLAGS += --no-print-directory
+.DEFAULT_GOAL := help
 
 #  Files
 URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
@@ -65,7 +64,7 @@ EX02_LOGS_AFTER_PY = ex02_logs_after.py
 #  Commands
 DOCKER_EXEC = docker exec -it
 RM_VOLUMES_SH = rm_volumes.sh
-PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST)
+PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) -W
 PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
 DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
@@ -79,6 +78,17 @@ DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 		ex04 \
 
 
+wait_for_postgres:
+	@echo "Checking if PostgreSQL is ready..."
+	@for i in {1..10}; do \
+		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) && break || sleep 2; \
+	done
+	@printf "\nPostgreSQL is ready!\n\n"
+
+
+
+
+
 up: env unzip
 	docker-compose -f $(DC_COMPOSE) up -d
 	$(MAKE) docker_checks
@@ -88,6 +98,10 @@ up: env unzip
 	@printf "\nReminder: if a Dockerfile has been modified, \
 	you must stop, rebuild and up it.\n \
 	make rebuild_image SERVICE=<service_name>\n\n"; \
+
+
+help:
+	@printf "On the TODO list"
 
 
 env:
@@ -189,14 +203,6 @@ postgres_container:
 
 python_container:
 	$(DOCKER_EXEC) $(PYTHON_CONTAINER) bash
-
-
-wait_for_postgres:
-	@echo "Checking if PostgreSQL is ready..."
-	@for i in {1..10}; do \
-		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready $(PSQL_OPTIONS) && break || sleep 2; \
-	done
-	@printf "\nPostgreSQL is ready!\n\n"
 
 
 down:
