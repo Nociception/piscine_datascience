@@ -8,7 +8,20 @@ def proceed_after_table_report(
     cursor: psycopg.Cursor,
     query_info: QueryInfo,
 ) -> bool:
-    """DOCSTRING"""
+    """
+    Asks the user whether to proceed with a table modification.
+
+    This function displays the table report
+        before prompting the user for confirmation.
+
+    Args:
+        cursor (psycopg.Cursor): The database cursor.
+        query_info (QueryInfo): The SQL query metadata.
+
+    Returns:
+        bool: True if the user confirms proceeding, False otherwise.
+    """
+
 
     if query_info.modification_type in ["CREATE", "DROP"]:
         return True

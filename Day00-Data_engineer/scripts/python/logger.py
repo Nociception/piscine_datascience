@@ -14,10 +14,25 @@ LOG_COLORS = {
 }
 
 class ColoredFormatter(logging.Formatter):
-    """DOCSTRING"""
+    """
+    Custom log formatter that applies color coding to log messages.
+
+    This class extends `logging.Formatter`
+    to add ANSI color codes to log levels,
+    making log output visually distinguishable.
+    """
 
     def format(self, record):
-        """DOCSTRING"""
+        """
+        Formats the log message with an appropriate color.
+
+        Args:
+            record (logging.LogRecord):
+                The log record containing log information.
+
+        Returns:
+            str: The formatted log message with ANSI color codes.
+        """
 
         log_color = LOG_COLORS.get(record.levelname, "")
         log_message = super().format(record)
@@ -29,7 +44,9 @@ log_level = getattr(logging, log_level, logging.INFO)
 
 
 console_handler = logging.StreamHandler()
-console_handler.setFormatter(ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s"))
+console_handler.setFormatter(
+    ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s")
+)
 console_handler.setLevel(log_level)
 
 

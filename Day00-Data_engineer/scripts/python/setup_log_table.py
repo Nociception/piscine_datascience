@@ -4,7 +4,12 @@ import os
 
 
 def main():
-    """DOCSTRING"""
+    """
+    Initializes the logs table in the database.
+
+    - Retrieves the table name from environment variables.
+    - Defines table schema and creates the table if it does not exist.
+    """
 
     TABLE_NAME = os.getenv("LOGS_TABLE")
     HEADERS = [

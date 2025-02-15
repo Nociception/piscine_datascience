@@ -3,6 +3,7 @@ from QueryInfo import QueryInfo
 from psycopg.sql import SQL, Identifier, Placeholder
 from sqli_detection import sqli_detection
 
+
 @psycopg_connection_handler()
 def insert_rows(
     table_name: str,
@@ -10,7 +11,19 @@ def insert_rows(
     rows: list[tuple],
     files_involved: str | None = None
 ) -> QueryInfo:
-    """DOCSTRING"""
+    """
+    Inserts multiple rows into a PostgreSQL table.
+
+    Args:
+        table_name (str): The name of the table.
+        headers (list[str]): The list of column names.
+        rows (list[tuple]): The list of tuples representing row values.
+        files_involved (str | None):
+            The file name that triggered the insertion.
+
+    Returns:
+        QueryInfo: An object containing query metadata.
+    """
 
     sqli_detection(table_name)
     sqli_detection(files_involved)

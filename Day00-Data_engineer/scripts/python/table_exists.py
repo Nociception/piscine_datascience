@@ -6,7 +6,16 @@ def table_exists(
     cursor: psycopg.Cursor,
     table_name: str
 ) -> bool:
-    """DOCSTRING"""
+    """
+    Checks if a specified table exists in the PostgreSQL database.
+
+    Args:
+        cursor (psycopg.Cursor): The database cursor.
+        table_name (str): The name of the table to check.
+
+    Returns:
+        bool: True if the table exists, False otherwise.
+    """
 
     sqli_detection(table_name)
 

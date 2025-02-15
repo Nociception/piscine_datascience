@@ -3,7 +3,13 @@ import psycopg, os
 
 
 def get_psycopg_connection() -> tuple[psycopg.connect, psycopg.Cursor]:
-    """DOCSTRING"""
+    """
+    Establishes and returns a connection to the PostgreSQL database.
+
+    Returns:
+        tuple[psycopg.connect, psycopg.Cursor]:
+            The database connection and cursor.
+    """
 
     connection = psycopg.connect(
         user=os.getenv("POSTGRES_USER"),

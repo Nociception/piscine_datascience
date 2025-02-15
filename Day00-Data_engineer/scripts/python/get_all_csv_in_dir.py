@@ -2,7 +2,18 @@ from logger import logger
 
 
 def get_all_csv_in_dir(csv_dir: str) -> None | list[str]:
-    """DOCSTRING"""
+    """
+    Retrieves all CSV file names from a specified directory.
+
+    Args:
+        csv_dir (str): The directory containing CSV files.
+
+    Returns:
+        list[str] | None: A list of CSV file names if found, otherwise None.
+
+    Raises:
+        AssertionError: If the directory does not exist.
+    """
 
     assert csv_dir.exists(), (
         f"ERROR: CSV directory not found at {csv_dir}"

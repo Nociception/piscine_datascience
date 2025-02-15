@@ -10,7 +10,18 @@ def import_csv_with_table_creation(
         container_csv_dir: str,
         column_types: list[str]
 ) -> None:
-    """DOCSTRING"""
+    """
+    Automates table creation and CSV data import.
+
+    - Reads all CSV files in the specified directory.
+    - Extracts headers from each file.
+    - Creates corresponding tables in PostgreSQL.
+    - Imports CSV data into the created tables.
+
+    Args:
+        container_csv_dir (str): The directory containing CSV files.
+        column_types (list[str]): A list of column data types.
+    """
 
     csv_dir = Path(container_csv_dir).resolve()
 

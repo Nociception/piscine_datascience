@@ -12,7 +12,17 @@ def logs_table_filler(
     query_info: QueryInfo,
     row_diff: int = 0
 ) -> None:
-    """DOCSTRING"""
+    """
+    Logs database modifications in a dedicated logs table.
+
+    Args:
+        cursor (psycopg.Cursor):
+            The database cursor.
+        query_info (QueryInfo):
+            The object containing SQL query metadata.
+        row_diff (int, optional):
+            The difference in row count after execution. Defaults to 0.
+    """
 
     if query_info is None:
         logger.info(

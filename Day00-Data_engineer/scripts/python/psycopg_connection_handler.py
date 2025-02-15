@@ -9,14 +9,65 @@ import psycopg
 
 
 def psycopg_connection_handler():
-    """DOCSTRING"""
+    """
+    A decorator factory that manages PostgreSQL connections and transactions.
+
+    This decorator ensures that:
+    - A database connection is established
+        before the decorated function runs.
+    - The function executes within
+        a controlled transaction.
+    - The database connection is properly
+        closed after execution.
+    - Errors related to the database connection or SQL execution are logged.
+
+    Returns:
+        function: A decorator that wraps the function
+            to handle database interactions.
+    """
 
     def decorator(func):
-        """DOCSTRING"""
+        """
+        A decorator that wraps a function to handle PostgreSQL connections.
+
+        Args:
+            func (function): The function to be decorated.
+
+        Returns:
+            function: A wrapper function that manages the database connection.
+        """
+
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            """DOCSTRING"""
+            """
+            Wrapper function that establishes a database connection,
+                executes the decorated function,
+                logs relevant information, and ensures proper cleanup.
+
+            Steps:
+            1. Establishes a PostgreSQL connection.
+            2. Calls the decorated function, retrieving a `QueryInfo` object.
+            3. Logs the SQL query metadata.
+            4. Determines the initial row count if applicable.
+            5. Checks if execution should proceed (user confirmation step).
+            6. Executes the SQL query with appropriate parameters.
+            7. Logs the execution result and updates the logs table.
+            8. Commits the transaction and closes the connection.
+            9. Handles and logs any exceptions raised during execution.
+
+            Args:
+                *args: Positional arguments for the decorated function.
+                **kwargs: Keyword arguments for the decorated function.
+
+            Raises:
+                psycopg.OperationalError:
+                    If there is an issue with the database connection.
+                psycopg.ProgrammingError:
+                    If an SQL syntax error occurs.
+                Exception: For any unexpected errors.
+            """
+
 
             connection = None
             try:

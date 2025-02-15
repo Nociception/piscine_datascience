@@ -2,7 +2,16 @@ import re
 
 
 def sqli_detection(arg: str) -> None:
-    """DOCSTRING"""
+    """
+    Detects potential SQL injection attempts in input strings.
+
+    Args:
+        arg (str): The input string to check.
+
+    Raises:
+        ValueError:
+            If the input string matches common SQL injection patterns.
+    """
 
     if arg is None:
         return

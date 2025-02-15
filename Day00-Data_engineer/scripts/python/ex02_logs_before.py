@@ -5,7 +5,7 @@ import psycopg, os
 
 
 def main() -> None:
-    """DOCSTRING"""
+    """Executes a report generation for a specific table."""
 
     connection = None
     try:

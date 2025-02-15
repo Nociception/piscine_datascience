@@ -8,7 +8,16 @@ def ellipse(
     s: str,
     threshold: int
 ) -> str:
-    """DOCSTRING"""
+    """
+    Truncates a string if it exceeds a given length.
+
+    Args:
+        s (str): The input string.
+        threshold (int): The maximum allowed length.
+
+    Returns:
+        str: The truncated string with '...' appended if necessary.
+    """
 
     return s if len(s) < threshold else s[:threshold - 3] + '...'
 
@@ -17,7 +26,17 @@ def vulnerable_table_report(
     cursor: psycopg.Cursor,
     table_name: str,
 ) -> None:
-    """DOCSTRING"""
+    """
+    Retrieves logs for a table
+        using an insecure query (vulnerable to SQL injection).
+
+    Args:
+        cursor (psycopg.Cursor): The database cursor.
+        table_name (str): The name of the table to fetch logs for.
+
+    Raises:
+        psycopg.OperationalError: If the logs table does not exist.
+    """
     
     logs_table = os.getenv("LOGS_TABLE")
     if not table_exists(cursor, logs_table):

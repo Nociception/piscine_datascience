@@ -10,7 +10,18 @@ def import_csv_to_table(
     table_name: str,
     csv_path: str
 ) -> QueryInfo:
-    """DOCSTRING"""
+    """
+    Imports a CSV file into a specified PostgreSQL table
+    using the COPY command.
+
+    Args:
+        table_name (str):
+            The name of the table where data will be imported.
+        csv_path (str): The full path to the CSV file.
+
+    Returns:
+        QueryInfo: An object containing query metadata.
+    """
 
     sqli_detection(table_name)
     sqli_detection(csv_path)
