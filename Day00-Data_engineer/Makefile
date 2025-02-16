@@ -14,58 +14,58 @@ MAKEFLAGS += --no-print-directory
 .DEFAULT_GOAL := help
 
 #  Files
-ADMINER_SH = adminer.sh
-OUTPUT_ZIP = subject.zip
-URL = https://cdn.intra.42.fr/document/document/23499/subject.zip
+ADMINER_SH := adminer.sh
+OUTPUT_ZIP := subject.zip
+URL := https://cdn.intra.42.fr/document/document/23499/subject.zip
 #  Directories
-MAKEFILE_DIR = makefile
-SCRIPTS_DIR = scripts
-SUBJECT_DIR = subject
+MAKEFILE_DIR := makefile
+SCRIPTS_DIR := scripts
+SUBJECT_DIR := subject
 #  Exercises
-EX01_DIR = $(SCRIPTS_DIR)
-EX01_PY = ex01.py
-EX01_TABLE = example
-EX03_DIR = ex03
-EX03_PY = automatic_table.py
-EX04_DIR = ex04
-EX04_PY = items_table.py
-LOGS_TABLE = logs
+EX01_DIR := $(SCRIPTS_DIR)
+EX01_PY := ex01.py
+EX01_TABLE := example
+EX03_DIR := ex03
+EX03_PY := automatic_table.py
+EX04_DIR := ex04
+EX04_PY := items_table.py
+LOGS_TABLE := logs
 
 # Docker
 #  Infos
-DOCKER_NETWORK = network
-ADMINER_PORT = 8080
-ADMINER_SYSTEM = PostgreSQL
-POSTGRES_DB = piscineds
-POSTGRES_HOST = localhost
-POSTGRES_PASSWORD = mysecretpassword
-POSTGRES_PORT = 5432
-POSTGRES_USER = nstoutze
-PY_LOG_LEVEL = WARNING
+DOCKER_NETWORK := network
+ADMINER_PORT := 8080
+ADMINER_SYSTEM := PostgreSQL
+POSTGRES_DB := piscineds
+POSTGRES_HOST := localhost
+POSTGRES_PASSWORD := mysecretpassword
+POSTGRES_PORT := 5432
+POSTGRES_USER := nstoutze
+PY_LOG_LEVEL := WARNING
 #  Containers' name
-ADMINER_CONTAINER = adminer
-POSTGRES_CONTAINER = postgres
-PYTHON_CONTAINER = python
+ADMINER_CONTAINER := adminer
+POSTGRES_CONTAINER := postgres
+PYTHON_CONTAINER := python
 #  Directories
-DATA_VOLUME = data
-PYTHON_APP_DIR = app
+DATA_VOLUME := data
+PYTHON_APP_DIR := app
 #  Files
-DC_COMPOSE = docker-compose.yaml
-DOWN_SH = down.sh
-EX02_SQL = ex02/table.sql
-EX02_TABLE = data_2022_nov
-EX02_CSV_FILE = /$(DATA_VOLUME)/customer/$(EX02_TABLE).csv
-EX02_LOGS_BEFORE_PY = ex02_logs_before.py
-EX02_LOGS_AFTER_PY = ex02_logs_after.py
-DROP_TABLE_PY = drop_table.py
-REQUIREMENTS = requirements.txt
-SETUP_LOG_TABLE = setup_log_table.py
+DC_COMPOSE := docker-compose.yaml
+DOWN_SH := down.sh
+EX02_SQL := ex02/table.sql
+EX02_TABLE := data_2022_nov
+EX02_CSV_FILE := /$(DATA_VOLUME)/customer/$(EX02_TABLE).csv
+EX02_LOGS_BEFORE_PY := ex02_logs_before.py
+EX02_LOGS_AFTER_PY := ex02_logs_after.py
+DROP_TABLE_PY := drop_table.py
+REQUIREMENTS := requirements.txt
+SETUP_LOG_TABLE := setup_log_table.py
 #  Commands
-DOCKER_EXEC = docker exec -it
-RM_VOLUMES_SH = rm_volumes.sh
-PSQL_OPTIONS = -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) -W
-PSQL = $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
-DOCKER_PYTHON = $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
+DOCKER_EXEC := docker exec -it
+RM_VOLUMES_SH := rm_volumes.sh
+PSQL_OPTIONS := -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) -W
+PSQL := $(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql $(PSQL_OPTIONS)
+DOCKER_PYTHON := $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 
 
 # ========================= RULES =========================
