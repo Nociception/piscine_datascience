@@ -1,48 +1,6 @@
-services:
-
-  postgres:
-    build:
-      context: .
-      dockerfile: Dockerfile_postgres
-    container_name: ${POSTGRES_CONTAINER_NAME}
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - ./subject:/data
-    networks:
-      - network
-  
-  adminer:
-    image: adminer:latest
-    container_name: adminer
-    ports:
-      - "8080:8080"
-    networks:
-      - network
-
-  python:
-    build:
-      context: .
-      dockerfile: Dockerfile_python
-    container_name: python
-    volumes:
-      - ./subject:/data
-      - ./app:/app
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: ${POSTGRES_PORT}
-    networks:
-      - network
-    command: ["bash"]
-    tty: true
-
+# env_file key is manually added in each service.
+# It seems that docker-compose automatic .env file works
+# with a cache file, which leads to .env updates fail.
 
 networks:
   network:
@@ -52,3 +10,77 @@ networks:
 volumes:
   postgres_data:
     driver: local
+
+
+services:
+
+  postgres:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: ${POSTGRES_DOCKERFILE}
+      args:
+        SCRIPTS_DIR: ${SCRIPTS_DIR}
+        POSTGRES_CONTAINER: ${POSTGRES_CONTAINER}
+        PG_HBA_CONF: ${PG_HBA_CONF}
+        INIT_PG_HBA_SH: ${INIT_PG_HBA_SH}
+    container_name: ${POSTGRES_CONTAINER}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      SCRIPTS_DIR: ${SCRIPTS_DIR}
+      PYTHON_CONTAINER: ${PYTHON_CONTAINER}
+      REQUIREMENTS: ${REQUIREMENTS}
+    volumes:
+      - ./${SUBJECT_DIR}:/${DATA_VOLUME}
+      - ./${EX02_SQL}:/${EX02_SQL}
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ${DOCKER_NETWORK}
+  
+  adminer:
+    env_file:
+      - .env
+    image: adminer:latest
+    container_name: ${ADMINER_CONTAINER}
+    ports:
+      - "${ADMINER_PORT}:${ADMINER_PORT}"
+    networks:
+      - ${DOCKER_NETWORK}
+
+  python:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: ${PYTHON_DOCKERFILE}
+      args:
+        PYTHON_APP_DIR: ${PYTHON_APP_DIR}
+        REQUIREMENTS: ${REQUIREMENTS}
+        SCRIPTS_DIR: ${SCRIPTS_DIR}
+        PYTHON_CONTAINER: ${PYTHON_CONTAINER}
+    container_name: ${PYTHON_CONTAINER}
+    volumes:
+      - ./${SUBJECT_DIR}:/${DATA_VOLUME}
+      - ./${SCRIPTS_DIR}/${PYTHON_CONTAINER}:/${PYTHON_APP_DIR}/${SCRIPTS_DIR}
+      - ./${EX03_DIR}:/${PYTHON_APP_DIR}/${EX03_DIR}
+      - ./${EX04_DIR}:/${PYTHON_APP_DIR}/${EX04_DIR}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_CONTAINER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      LOGS_TABLE: ${LOGS_TABLE}
+      EX00_TABLE: ${EX00_TABLE}
+      EX02_TABLE: ${EX02_TABLE}
+      EX02_CSV_FILE: ${EX02_CSV_FILE}
+      PY_LOG_LEVEL: ${PY_LOG_LEVEL}
+    networks:
+      - ${DOCKER_NETWORK}
+    command: ["bash"]
+    tty: true

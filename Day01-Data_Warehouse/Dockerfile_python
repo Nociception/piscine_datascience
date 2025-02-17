@@ -1,16 +1,33 @@
 FROM python:3.10-slim
 
-WORKDIR /app
-
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    libpq5 \
-    gcc \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+libpq-dev \
+libpq5 \
+gcc \
+python3-dev \
+&& rm -rf /var/lib/apt/lists/*
 
-COPY app/requirements.txt /app/requirements.txt
+# These 2 first instructions have to stay on top of this Dockerfile.
+# They will not change, in order to avoid useless and expensive (data traffic)
+# downloads in case of a change in the Dockerfile.
 
-RUN pip install --no-cache-dir -r /app/requirements.txt
+ARG PYTHON_APP_DIR
+ARG REQUIREMENTS
+ARG SCRIPTS_DIR
+ARG PYTHON_CONTAINER
 
-COPY app /app
+ENV PYTHON_APP_DIR=${PYTHON_APP_DIR}
+ENV REQUIREMENTS=${REQUIREMENTS}
+ENV SCRIPTS_DIR=${SCRIPTS_DIR}
+ENV PYTHON_CONTAINER=${PYTHON_CONTAINER}
+ENV PYTHONPATH=/${PYTHON_APP_DIR}/${SCRIPTS_DIR}
+
+WORKDIR /${PYTHON_APP_DIR}
+
+COPY ${SCRIPTS_DIR}/${PYTHON_CONTAINER}/${REQUIREMENTS} /${PYTHON_APP_DIR}/${REQUIREMENTS}
+
+RUN pip install --no-cache-dir -r /${PYTHON_APP_DIR}/${REQUIREMENTS}
+
+# Remind to docker-compose build <container_name>
+# to get an image, and then a container
+# with any modification you would do in this Dockerfile
