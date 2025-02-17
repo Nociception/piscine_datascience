@@ -279,3 +279,7 @@ wait_for_postgres:
 		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) && break || sleep 2; \
 	done
 	@printf "\nPostgreSQL is ready!\n\n"
+
+
+psql_without_password:
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST)
