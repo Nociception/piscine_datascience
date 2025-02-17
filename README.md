@@ -2,9 +2,14 @@
 This post common core [42](https://42.fr)'s piscine is an intensive program which allows to learn basical database and SQL skills.
 Each module introduces a new concept, more or less one by one. They must be validated in the order they are proposed.
 
-## Note
+## Notes
+### Files repetition
 As each of these days are supposed to be defended once at a time,
 the Makefile+docker setup files are in each Day* directory.
+### Password in Day00
+Unfortunatly, due to how the Piscine subject is designed,
+I cannot do another way that writing the password in the .env
+The other days secure the password.
 
 ---
 

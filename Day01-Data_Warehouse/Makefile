@@ -1,4 +1,6 @@
-# TODO add the subject for each exercise
+# TODO LIST
+# add the subject for each exercise
+# secure the password freely, as this day01 does not talk about it !!
 
 # ============================================================
 #                           MAKEFILE
