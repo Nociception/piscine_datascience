@@ -73,7 +73,8 @@ DOCKER_PYTHON := $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 .PHONY: adminer docker_checks down download drop end env \
 		ex00 ex01 ex02 ex03 ex04 \
 		fclean help postgres_container psql python_container \
-		rebuild_image rm_volumes sqli unzip up wait_for_postgres \
+		psql_without_password rebuild_image rm_volumes sqli \
+		unzip up wait_for_postgres \
 
 
 adminer:
@@ -167,6 +168,8 @@ env:
 
 
 ex00: up psql
+	@printf "\nYou may want to test a connection without the -W option:\n \
+	make psql_without_password\n"
 
 
 ex01: up
@@ -218,6 +221,10 @@ postgres_container:
 
 psql: up wait_for_postgres
 	$(PSQL)
+
+
+psql_without_password:
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST)
 
 
 python_container:
@@ -279,7 +286,3 @@ wait_for_postgres:
 		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) && break || sleep 2; \
 	done
 	@printf "\nPostgreSQL is ready!\n\n"
-
-
-psql_without_password:
-	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST)
