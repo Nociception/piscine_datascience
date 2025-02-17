@@ -4,6 +4,33 @@ from insert_rows import insert_rows
 import os
 
 
+"""
+Exercice 00 : Create postgres DB
+Turn-in directory : ex00/
+Files to turn in : None
+Allowed functions : All
+For this exercise you can use directly postgres
+if installed in your campus or if you go
+through a VM, otherwise you have to use docker compose.
+• The username is your student login
+• The name of the DB is piscineds
+• The password is "mysecretpassword"
+We must be able to connect to your posgress database with this command:
+psql -U your_login -d piscineds -h localhost -W
+mysecretpassword
+piscineds=#
+
+Exercice 01 : Show me your DB
+Turn-in directory : ex01/
+Files to turn in :
+Allowed functions : pgadmin, Postico, dbeaver or what you want to see the db
+easily
+• Find a way to visualize the db easily with a software
+• The chosen software must help you to easily find and
+manipulate data using its owncorresponding ID
+"""
+
+
 def main():
     """
     Creates a table and inserts predefined rows into it.
