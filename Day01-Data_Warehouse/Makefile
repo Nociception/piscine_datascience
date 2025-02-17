@@ -48,7 +48,7 @@ POSTGRES_HOST := localhost
 POSTGRES_PASSWORD := mysecretpassword
 POSTGRES_PORT := 5432
 POSTGRES_USER := nstoutze
-PY_LOG_LEVEL := DEBUG
+PY_LOG_LEVEL := WARNING
 #  Containers' name
 ADMINER_CONTAINER := adminer
 POSTGRES_CONTAINER := postgres
@@ -110,7 +110,7 @@ download:
 		echo "$(FEB_CSV) already exists. Skipping download."; \
 	else \
 		echo "Downloading $(FEB_CSV) from $(URL_FEB_CSV)..."; \
-		curl -o $(FEB_CSV) -L $(URL_FEB_CSV); \
+		curl -o $(SUBJECT_DIR)/customer/$(FEB_CSV) -L $(URL_FEB_CSV); \
 		echo "Download complete: $(FEB_CSV)"; \
 	fi
 
