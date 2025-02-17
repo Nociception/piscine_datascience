@@ -171,12 +171,40 @@ ex00: up
 	@$(MAKE) adminer
 
 
+drop:
+	@if [ -z "$(TABLE)" ]; then \
+		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
+		exit 1; \
+	fi
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
+
+
+end: down fclean
+
+
+fclean:
+	rm -rf $(SUBJECT_DIR) $(OUTPUT_ZIP) $(APP_DIR_NAME) .env || true
+	$(MAKE) rm_volumes
+
+
 help:
 	@bash $(SCRIPTS_DIR)/$(MAKEFILE_DIR)/help.sh $(RULE)
 
 
+postgres_container:
+	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) bash
+
+
+psql: up wait_for_postgres
+	$(PSQL)
+
+
 psql_without_password:
 	$(DOCKER_EXEC) $(POSTGRES_CONTAINER) psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST)
+
+
+python_container:
+	$(DOCKER_EXEC) $(PYTHON_CONTAINER) bash
 
 
 rebuild_image:
@@ -199,6 +227,10 @@ rebuild_image:
 
 rm_volumes:
 	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(RM_VOLUMES_SH)
+
+
+sqli: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/vulnerable_sql.py
 
 
 up: env unzip

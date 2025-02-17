@@ -41,7 +41,7 @@ def main():
     - Inserts a predefined dataset into the table.
     """
 
-    TABLE_NAME = os.getenv("EX01_TABLE")
+    TABLE_NAME = os.getenv("EX00_TABLE")
 
     HEADERS = [
         "event_time",
@@ -86,7 +86,7 @@ def main():
         TABLE_NAME,
         HEADERS,
         ROWS,
-        os.getenv("EX01_PY")
+        os.getenv("EX00_PY")
     )
 
 
