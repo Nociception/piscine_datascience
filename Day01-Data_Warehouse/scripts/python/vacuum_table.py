@@ -2,6 +2,8 @@ from sqli_detection import sqli_detection
 from psycopg_connection_handler import psycopg_connection_handler
 from psycopg.sql import SQL, Identifier, Literal
 from QueryInfo import QueryInfo
+from logger import logger
+import sys
 
 
 @psycopg_connection_handler()
@@ -31,4 +33,15 @@ def vacuum_table(
     )
 
 
+def main() -> None:
+    """DOCSTRING"""
 
+    if len(sys.argv) != 2:
+        logger.error("Usage: python3 vacuum_table.py <table_name>")
+        sys.exit(1)
+
+    vacuum_table(table_name=sys.argv[1], full=True)
+
+
+if __name__ == "__main__":
+    main()

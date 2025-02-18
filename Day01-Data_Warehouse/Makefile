@@ -71,11 +71,13 @@ PYTHON_CONTAINER := python
 DATA_VOLUME := data
 PYTHON_APP_DIR := app
 #  Files
+ANALYZE_TABLE_PY := analyze_table.py
 DC_COMPOSE := docker-compose.yaml
 DOWN_SH := down.sh
 DROP_TABLE_PY := drop_table.py
 REQUIREMENTS := requirements.txt
 SETUP_LOG_TABLE := setup_log_table.py
+VACUUM_TABLE_PY := vacuum_table.py
 #  Commands
 DOCKER_EXEC := docker exec -it
 RM_VOLUMES_SH := rm_volumes.sh
@@ -92,6 +94,10 @@ DOCKER_PYTHON := $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 adminer:
 	./$(SCRIPTS_DIR)/$(MAKEFILE_DIR)/$(ADMINER_SH)
 
+
+analyze: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(ANALYZE_TABLE_PY) $(TABLE)
+	
 
 docker_checks:
 	@printf "\n"
@@ -122,6 +128,14 @@ download:
 		curl -o $(SUBJECT_DIR)/customer/$(FEB_CSV) -L $(URL_FEB_CSV); \
 		echo "Download complete: $(FEB_CSV)"; \
 	fi
+
+
+drop:
+	@if [ -z "$(TABLE)" ]; then \
+		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
+		exit 1; \
+	fi
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
 
 
 env:
@@ -180,14 +194,6 @@ ex00: up
 
 ex01: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX01_DIR)/$(EX01_PY)
-
-
-drop:
-	@if [ -z "$(TABLE)" ]; then \
-		printf "ERROR: No table name provided !\nUsage: make drop TABLE=<table_name>\n"; \
-		exit 1; \
-	fi
-	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(DROP_TABLE_PY) $(TABLE)
 
 
 end: down fclean
@@ -272,6 +278,10 @@ unzip: download
 	else \
 		echo "$(OUTPUT_ZIP) not found. Please run 'make download' first."; \
 	fi
+
+
+vacuum: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(VACUUM_TABLE_PY) $(TABLE)
 
 
 wait_for_postgres:
