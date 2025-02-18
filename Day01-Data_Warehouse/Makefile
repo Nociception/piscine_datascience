@@ -1,9 +1,11 @@
 # TODO LIST
-# secure the password freely, as this day01 does not talk about it !!
+
 # analyze and vacuum functions
 # write the csv name in the quesiton
-# import csv in chronological order
+# import csv in chronological order in the ex01
+# import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
 
+# secure the password freely, as this day01 does not talk about it !!
 # remind to write sqli-proof queries
 # add the subject for each exercise
 # rewrite help.sh file
@@ -58,7 +60,7 @@ POSTGRES_HOST := localhost
 POSTGRES_PASSWORD := mysecretpassword
 POSTGRES_PORT := 5432
 POSTGRES_USER := nstoutze
-PY_LOG_LEVEL := DEBUG
+PY_LOG_LEVEL := WARNING
 #  Containers' name
 ADMINER_CONTAINER := adminer
 POSTGRES_CONTAINER := postgres
@@ -230,6 +232,13 @@ rebuild_image:
 	docker-compose build $(SERVICE)
 	docker-compose up -d $(SERVICE)
 	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
+
+
+restart_containers_env_changed:
+	$(MAKE) down
+	rm .env
+	$(MAKE) env
+	$(MAKE) up
 
 
 rm_volumes:
