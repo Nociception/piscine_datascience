@@ -30,7 +30,9 @@ def proceed_after_table_report(
 
     while True:
         user_input = input(
-            "Do you want to proceed with the import? (yes/no) "
+            f"About to {query_info.modification_type}"
+            f" (file involved: {query_info.files_involved}).\n"
+            "Do you want to proceed ? (yes/no) "
         ).strip().lower()
         if user_input in ["yes", "y", ""]:
             return True
