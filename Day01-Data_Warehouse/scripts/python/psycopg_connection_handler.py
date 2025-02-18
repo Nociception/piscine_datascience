@@ -73,6 +73,10 @@ def psycopg_connection_handler():
                 query_info = func(*args, **kwargs)
                 logger.debug(query_info)
 
+                if query_info.modification_type.startswith("VACUUM"):
+                    connection.autocommit = True
+                    logger.info("Autocommit enabled for VACUUM.")
+
                 table_name = query_info.table_name
 
                 initial_count = 0

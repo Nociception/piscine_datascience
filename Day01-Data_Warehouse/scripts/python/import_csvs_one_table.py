@@ -4,7 +4,7 @@ from get_all_csv_in_dir import get_all_csv_in_dir
 from logger import logger
 from create_table import create_table
 from analyze_table import analyze_table
-# from vacuum_table import vacuum_table
+from vacuum_table import vacuum_table
 import re
 
 
@@ -89,29 +89,7 @@ def import_csvs_one_table(
 
         analyze_table(table_name)
 
-        # vacuum_table(table_name, full=True)
-
-
-# def vacuum_table(
-#     cursor:psycopg.Cursor,
-#     table_name: str,
-#     full: bool
-# ) -> None:
-#     """
-#     Performs an VACUUM (FULL depends on the `full` parameter)
-#     on the table, in order to get the right rows number on adminer.
-#     """
-
-#     if not was_vacuumed(cursor, table_name):
-#         full = ' FULL ' if full else ' '
-#         vacuum_query = f"VACUUM{full}{table_name};"
-#         cursor.execute(vacuum_query)
-#         print(f"VACUUM{full}command run on the table {table_name}.")
-#     else:
-#         print(
-#             f"VACUUM skipped for table` "
-#             f"{table_name}`: already vacuumed recently."
-#         )
+        vacuum_table(table_name, full=True)
 
     except AssertionError as e:
         logger.error(e)

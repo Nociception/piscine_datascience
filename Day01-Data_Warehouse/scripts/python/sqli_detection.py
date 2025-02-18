@@ -35,4 +35,4 @@ def sqli_detection(arg: str) -> None:
             "Wrong argument."
         )
         # No more details, in order not to give more information
-        # to a potentiel problematic user
+        # to a potentiel problematic user.

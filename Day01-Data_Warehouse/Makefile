@@ -1,6 +1,6 @@
 # TODO LIST
 
-# analyze and vacuum functions
+# analyze and vacuum makefile rules
 # write the csv name in the quesiton
 # import csv in chronological order in the ex01
 # import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
@@ -12,8 +12,10 @@
 # DOCSTRING
 # flake8
 # update .PHONY
+# adjust module versions in requirements.txt (for both day00 and 01)
 
-
+# 20692840
+# 20692840
 
 
 
