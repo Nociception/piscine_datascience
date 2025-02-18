@@ -1,6 +1,19 @@
 # TODO LIST
-# add the subject for each exercise
 # secure the password freely, as this day01 does not talk about it !!
+# analyze and vacuum functions
+# write the csv name in the quesiton
+# import csv in chronological order
+
+# remind to write sqli-proof queries
+# add the subject for each exercise
+# rewrite help.sh file
+# DOCSTRING
+# flake8
+# update .PHONY
+
+
+
+
 
 # ============================================================
 #                           MAKEFILE
@@ -31,13 +44,10 @@ SUBJECT_DIR := subject
 EX00_DIR := $(SCRIPTS_DIR)
 EX00_PY := ex00.py
 EX00_TABLE := example
-
-EX03_DIR := ex03
-EX03_PY := automatic_table.py
-EX04_DIR := ex04
-EX04_PY := items_table.py
+EX01_DIR := ex01
+EX01_PY := customers_table.py
+EX01_TABLE := customers
 LOGS_TABLE := logs
-
 # Docker
 #  Infos
 DOCKER_NETWORK := network
@@ -48,7 +58,7 @@ POSTGRES_HOST := localhost
 POSTGRES_PASSWORD := mysecretpassword
 POSTGRES_PORT := 5432
 POSTGRES_USER := nstoutze
-PY_LOG_LEVEL := WARNING
+PY_LOG_LEVEL := DEBUG
 #  Containers' name
 ADMINER_CONTAINER := adminer
 POSTGRES_CONTAINER := postgres
@@ -59,11 +69,6 @@ PYTHON_APP_DIR := app
 #  Files
 DC_COMPOSE := docker-compose.yaml
 DOWN_SH := down.sh
-EX02_SQL := ex02/table.sql
-EX02_TABLE := data_2022_nov
-EX02_CSV_FILE := /$(DATA_VOLUME)/customer/$(EX02_TABLE).csv
-EX02_LOGS_BEFORE_PY := ex02_logs_before.py
-EX02_LOGS_AFTER_PY := ex02_logs_after.py
 DROP_TABLE_PY := drop_table.py
 REQUIREMENTS := requirements.txt
 SETUP_LOG_TABLE := setup_log_table.py
@@ -151,9 +156,7 @@ env:
 		echo "#  Files" >> .env; \
 		echo "EX00_PY=$(EX00_PY)" >> .env; \
 		echo "EX00_TABLE=$(EX00_TABLE)" >> .env; \
-		echo "EX02_SQL=$(EX02_SQL)" >> .env; \
-		echo "EX02_CSV_FILE=$(EX02_CSV_FILE)" >> .env; \
-		echo "EX02_TABLE=$(EX02_TABLE)" >> .env; \
+		echo "EX01_TABLE=$(EX01_TABLE)" >> .env; \
 		echo "INIT_PG_HBA_SH=init_pg_hba.sh" >> .env; \
 		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
 		echo "PG_HBA_CONF=pg_hba.conf" >> .env; \
@@ -169,6 +172,10 @@ env:
 ex00: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX00_DIR)/$(EX00_PY)
 	@$(MAKE) adminer
+
+
+ex01: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX01_DIR)/$(EX01_PY)
 
 
 drop:

@@ -7,8 +7,8 @@ import os
 
 
 def import_csv_with_table_creation(
-        container_csv_dir: str,
-        column_types: list[str]
+    container_csv_dir: str,
+    column_types: list[str]
 ) -> None:
     """
     Automates table creation and CSV data import.
@@ -23,24 +23,28 @@ def import_csv_with_table_creation(
         column_types (list[str]): A list of column data types.
     """
 
-    csv_dir = Path(container_csv_dir).resolve()
+    try:
+        csv_dir = Path(container_csv_dir).resolve()
 
-    for csv_file in get_all_csv_in_dir(csv_dir):
-        table_name = os.path.splitext(csv_file)[0]
-        csv_path = container_csv_dir + "/" + csv_file
+        for csv_file in get_all_csv_in_dir(csv_dir):
+            table_name = os.path.splitext(csv_file)[0]
+            csv_path = container_csv_dir + "/" + csv_file
 
-        with open(csv_dir / csv_file, "r", encoding="utf-8") as file:
-            headers = file.readline().strip().split(",")
-            logger.debug(f"Headers for {csv_file}: {headers}")
+            with open(csv_dir / csv_file, "r", encoding="utf-8") as file:
+                headers = file.readline().strip().split(",")
+                logger.debug(f"Headers for {csv_file}: {headers}")
 
-        create_table(
-            table_name,
-            headers,
-            column_types
-        )
-        import_csv_to_table(
-            table_name,
-            csv_path
-        )
+            create_table(
+                table_name,
+                headers,
+                column_types
+            )
+            import_csv_to_table(
+                table_name,
+                csv_path
+            )
 
-    logger.info("All CSV files have been imported successfully.")
+        logger.info("All CSV files have been imported successfully.")
+
+    except AssertionError as e:
+        logger.error(e)
