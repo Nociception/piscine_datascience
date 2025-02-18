@@ -52,6 +52,9 @@ case "$1" in
     "rebuild_image")
         echo "rebuild_image SERVICE=<service>: Rebuilds a Docker image and restarts the service."
         ;;
+    "restart_containers_env_changed")
+        echo "restart_containers_env_changed: downs the containers, deletes and recreates .env, and then ups back the containers."
+        ;;
     "rm_volumes")
         echo "rm_volumes: Deletes Docker volumes."
         ;;

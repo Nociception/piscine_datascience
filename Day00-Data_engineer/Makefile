@@ -73,8 +73,8 @@ DOCKER_PYTHON := $(DOCKER_EXEC) $(PYTHON_CONTAINER) python3
 .PHONY: adminer docker_checks down download drop end env \
 		ex00 ex01 ex02 ex03 ex04 \
 		fclean help postgres_container psql python_container \
-		psql_without_password rebuild_image rm_volumes sqli \
-		unzip up wait_for_postgres \
+		psql_without_password rebuild_image restart_containers_env_changed \
+		rm_volumes sqli unzip up wait_for_postgres \
 
 
 adminer:
@@ -246,7 +246,14 @@ rebuild_image:
 
 	docker-compose build $(SERVICE)
 	docker-compose up -d $(SERVICE)
-	printf "Service $(SERVICE) rebuilt and restarted successfully.\n"
+	printf "Service $(SERVICE) rebuilt and started successfully.\n"
+
+
+restart_containers_env_changed:
+	$(MAKE) down
+	rm .env
+	$(MAKE) env
+	$(MAKE) up
 
 
 rm_volumes:
