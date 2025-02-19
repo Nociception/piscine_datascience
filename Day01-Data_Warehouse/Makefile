@@ -11,7 +11,7 @@
 # flake8
 # update .PHONY
 # adjust module versions in requirements.txt (for both day00 and 01)
-
+# Add a log message into the QueryInfo objects for better logs message launching
 
 
 
@@ -63,7 +63,7 @@ POSTGRES_HOST := localhost
 POSTGRES_PASSWORD := mysecretpassword
 POSTGRES_PORT := 5432
 POSTGRES_USER := nstoutze
-PY_LOG_LEVEL := WARNING
+PY_LOG_LEVEL := INFO
 #  Containers' name
 ADMINER_CONTAINER := adminer
 POSTGRES_CONTAINER := postgres

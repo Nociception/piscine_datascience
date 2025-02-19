@@ -70,6 +70,7 @@ def psycopg_connection_handler():
             try:
                 connection, cursor = get_psycopg_connection()
 
+                # QueryInfo object retrieved
                 query_info = func(*args, **kwargs)
                 logger.debug(query_info)
 
@@ -77,11 +78,11 @@ def psycopg_connection_handler():
                     connection.autocommit = True
                     logger.info("Autocommit enabled for VACUUM.")
 
-                table_name = query_info.table_name
-
                 initial_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):
-                    initial_count = count_rows_table(cursor, table_name)
+                    initial_count = count_rows_table(
+                        cursor, 
+                        query_info.table_name)
 
                 if not proceed_after_table_report(
                     cursor,
@@ -89,6 +90,7 @@ def psycopg_connection_handler():
                 ):
                     return
 
+                # Query execution
                 if query_info.values:
                     flattened_values = []
                     for row in query_info.values:
@@ -98,10 +100,18 @@ def psycopg_connection_handler():
                 else:
                     cursor.execute(query_info.sql_query)
                 logger.info("Query executed.")
+                if query_info.modification_type == "REMOVE DUPLICATES":
+                    explain_analyze_report = cursor.fetchall()
+                    logger.info("\nDetails from EXPLAIN ANALYZE:")
+                    for row in explain_analyze_report:
+                        logger.info(row[0])
 
                 final_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):
-                    final_count = count_rows_table(cursor, table_name)
+                    final_count = count_rows_table(
+                        cursor,
+                        query_info.table_name
+                    )
                 row_diff = final_count - initial_count
 
                 logs_table_filler(
@@ -120,7 +130,7 @@ def psycopg_connection_handler():
                 # }
 
             except psycopg.OperationalError as e:
-                logger.warning(f"Database connection error: {e}")
+                logger.error(f"Database connection error: {e}")
             except psycopg.ProgrammingError as e:
                 logger.error(f"Programming error in SQL query: {e}")
             except Exception as e:
