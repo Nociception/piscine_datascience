@@ -83,8 +83,8 @@ def import_csvs_one_table(
             )
 
         logger.info(
-        f"All CSV files have been imported"
-        f" successfully into {table_name}."
+            f"All CSV files have been imported"
+            f" successfully into {table_name}."
         )
 
         analyze_table(table_name)

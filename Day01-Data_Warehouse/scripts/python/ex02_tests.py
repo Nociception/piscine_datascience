@@ -110,3 +110,6 @@ def create_test_table(
         f"INSERT INTO {test_table_name} (event_time, event_type, product_id, price, user_id, user_session, index) VALUES (%s, %s, %s, %s, %s, %s, %s);",
         sample_data
     )
+
+
+    TEST_TABLE_NAME = "duplicates_deletion_test"

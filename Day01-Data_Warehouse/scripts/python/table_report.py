@@ -57,11 +57,11 @@ def table_report(
         print(f"\nLogs for table '{table_name}':")
 
         widths = {
-            'Table': 15,
+            'Table': 20,
             'Date': 25,
-            'Action': 12,
+            'Action': 40,
             'File': 25,
-            'Row Diff': 8
+            'Row Diff': 10
         }
         print(" | ".join(
             f"{title:<{width}}"

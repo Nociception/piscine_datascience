@@ -1,7 +1,6 @@
 # TODO LIST
 
 # write the ex02-demo_test file
-# write the ex01run test at the begining of ex02 file
 
 # import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
 # secure the password freely, as this day01 does not talk about it !!
@@ -206,7 +205,7 @@ ex01: up
 
 ex02: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX02_DIR)/$(EX02_PY)
-	printf "\nYou might want to run `make ex02-demo_test` to see \
+	@printf "\nYou might want to run 'make ex02-demo_test' to see \
 	how the SQL query to remove duplicates affects a table, \
 	on a 60 rows one, which contains many duplicates cases.\n"
 
