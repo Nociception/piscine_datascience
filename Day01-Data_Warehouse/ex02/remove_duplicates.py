@@ -1,4 +1,5 @@
 from remove_close_timestamp_duplicates import remove_close_timestamp_duplicates
+from vacuum_table import vacuum_table
 import os
 
 
@@ -12,6 +13,8 @@ def main() -> None:
         TABLE_NAME,
         time_window=TIMEWINDOW
     )
+
+    vacuum_table(TABLE_NAME)
 
 if __name__ == "__main__":
     main()

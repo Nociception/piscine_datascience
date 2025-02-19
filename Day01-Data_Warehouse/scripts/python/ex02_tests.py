@@ -1,48 +1,30 @@
-def create_test_table(
-    cursor: psycopg.Cursor,
-    test_table_name: str
-) -> None:
-    """
-    Creates and populates a test table with five cases:
-    - lines 24 and 28:
-        are the same
-        separated by 3 lines with the same timestamp,
-        but different on the other columns (user session)
-    - lines 38 and 43:
-        are the same, except the 1 sec timestamp delta
-        separated by 4 lines with the same timestamp as the 38th,
-        but different on the other columns (user session)
-    - lines 56 and 57:
-        are the same
-    - lines 59 and 60:
-        are the same, except the 1 sec timestamp delta
+from create_table import create_table
+from insert_rows import insert_rows
+from datetime import datetime
+from remove_close_timestamp_duplicates import remove_close_timestamp_duplicates
 
-    Test table already time sorted.
 
-    Legends for the comments:
-    - SLA: Same line as
-    - TD1: time delta 1 second
+def create_ex02_test_table(
+    table_name: str,
+    headers: list[str],
+    column_types: list[str]
+):
+    """DOCSTRING"""
 
-    After the duplicates deletion,
-    the following must be deleted: 28, 43, 50, 56, 57, 60
-    """
+    create_table(
+        table_name=table_name,
+        headers=headers,
+        column_types=column_types
+    )
 
-    table_creation_query = f"""
-        DROP TABLE IF EXISTS {test_table_name};
 
-        CREATE TABLE {test_table_name} (
-            event_time TIMESTAMPTZ,
-            event_type VARCHAR(50),
-            product_id INT,
-            price NUMERIC(10, 2),
-            user_id BIGINT,
-            user_session UUID,
-            index INT
-        );
-    """
-    cursor.execute(table_creation_query)
+def populate_ex02_test_table(
+    table_name: str,
+    headers: list[str],
+):
+    """DOCSTRING"""
 
-    sample_data = [
+    ROWS = [
         ("2022-11-01 00:03:14+00", "view", 5888548, 3.97, 429913900, "2f0bff3c-252f-4fe6-afcd-5d8a6a92839a", 0),  # noqa: E501
         ("2022-11-01 00:03:38+00", "cart", 5864286, 20.16, 565876667, "cf5d7069-7465-4ec5-a9be-c911bc1b9f95", 1),  # noqa: E501
         ("2022-11-01 00:03:39+00", "view", 5883844, 25.71, 445896396, "b9052fb9-7da8-4df8-a1da-eae051cd8e9c", 2),  # noqa: E501
@@ -106,10 +88,81 @@ def create_test_table(
         ("2022-11-01 00:13:20+00", "remove_from_cart", 5749150, 0.22, 202438687, "8dc848f5-bac3-44d7-9414-75d4e599abaf", 60),  # noqa: E501  # SLA above TD1
     ]
 
-    cursor.executemany(
-        f"INSERT INTO {test_table_name} (event_time, event_type, product_id, price, user_id, user_session, index) VALUES (%s, %s, %s, %s, %s, %s, %s);",
-        sample_data
+    ROWS = [
+        (datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S+00"), *row[1:])
+        for row in ROWS
+    ]
+
+    insert_rows(
+        table_name=table_name,
+        headers=headers,
+        rows=ROWS,
+        files_involved="ex02_tests"
     )
 
 
-    TEST_TABLE_NAME = "duplicates_deletion_test"
+def main():
+    """
+    Creates and populates a test table with five cases:
+    - lines 24 and 28:
+        are the same
+        separated by 3 lines with the same timestamp,
+        but different on the other columns (user session)
+    - lines 38 and 43:
+        are the same, except the 1 sec timestamp delta
+        separated by 4 lines with the same timestamp as the 38th,
+        but different on the other columns (user session)
+    - lines 56 and 57:
+        are the same
+    - lines 59 and 60:
+        are the same, except the 1 sec timestamp delta
+
+    Test table already time sorted.
+
+    Legends for the comments:
+    - SLA: Same line as
+    - TD1: time delta 1 second
+
+    After the duplicates deletion,
+    the following must be deleted: 28, 43, 50, 56, 57, 60
+    61 rows before, 55 rows after.
+    """
+
+    EX02_TEST_TABLE = "ex02_test_table"
+
+    HEADERS = [
+        "event_time",
+        "event_type",
+        "product_id",
+        "price",
+        "user_id",
+        "user_session",
+        "index"
+    ]
+
+    COLUMN_TYPES = [
+        "TIMESTAMPTZ",
+        "VARCHAR(50)",
+        "INT",
+        "NUMERIC(10, 2)",
+        "BIGINT",
+        "UUID",
+        "INT"
+    ]
+
+    create_ex02_test_table(
+        table_name = EX02_TEST_TABLE,
+        headers = HEADERS,
+        column_types = COLUMN_TYPES
+    )
+
+    populate_ex02_test_table(
+        table_name = EX02_TEST_TABLE,
+        headers = HEADERS,
+    )
+    
+    remove_close_timestamp_duplicates(table_name=EX02_TEST_TABLE)
+
+
+if __name__ == "__main__":
+    main()

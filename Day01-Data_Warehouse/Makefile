@@ -1,7 +1,5 @@
 # TODO LIST
 
-# write the ex02-demo_test file
-
 # import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
 # secure the password freely, as this day01 does not talk about it !!
 # remind to write sqli-proof queries
@@ -10,8 +8,9 @@
 # DOCSTRING
 # flake8
 # update .PHONY
-# adjust module versions in requirements.txt (for both day00 and 01)
-# Add a log message into the QueryInfo objects for better logs message launching
+# Add a logger.info message into the QueryInfo objects for better logs message launching
+# Add a logfile to store every logs
+
 
 
 
@@ -49,6 +48,7 @@ EX01_PY := customers_table.py
 EX01_TABLE := customers
 EX02_DIR := ex02
 EX02_PY := remove_duplicates.py
+EX02_TESTS_PY := ex02_tests.py
 EX03_DIR := ex03
 EX03_PY := fusion.py
 EX03_TABLE := item
@@ -211,6 +211,7 @@ ex02: up
 
 
 ex02-demo_test: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_TESTS_PY)
 
 
 end: down fclean

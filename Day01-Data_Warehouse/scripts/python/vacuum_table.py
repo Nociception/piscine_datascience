@@ -9,7 +9,7 @@ import sys
 @psycopg_connection_handler()
 def vacuum_table(
     table_name: str,
-    full: bool
+    full: bool=True
 ) -> None:
     """
     Performs an VACUUM (FULL depends on the `full` parameter)
