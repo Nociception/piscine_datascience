@@ -66,8 +66,9 @@ services:
     volumes:
       - ./${SUBJECT_DIR}:/${DATA_VOLUME}
       - ./${SCRIPTS_DIR}/${PYTHON_CONTAINER}:/${PYTHON_APP_DIR}/${SCRIPTS_DIR}
+      - ./${EX01_DIR}:/${PYTHON_APP_DIR}/${EX01_DIR}
+      - ./${EX02_DIR}:/${PYTHON_APP_DIR}/${EX02_DIR}
       - ./${EX03_DIR}:/${PYTHON_APP_DIR}/${EX03_DIR}
-      - ./${EX04_DIR}:/${PYTHON_APP_DIR}/${EX04_DIR}
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

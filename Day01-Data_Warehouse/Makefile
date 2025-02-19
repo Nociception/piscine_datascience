@@ -1,10 +1,9 @@
 # TODO LIST
 
-# analyze and vacuum makefile rules
-# write the csv name in the quesiton
-# import csv in chronological order in the ex01
-# import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
+# write the ex02-demo_test file
+# write the ex01run test at the begining of ex02 file
 
+# import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
 # secure the password freely, as this day01 does not talk about it !!
 # remind to write sqli-proof queries
 # add the subject for each exercise
@@ -14,8 +13,6 @@
 # update .PHONY
 # adjust module versions in requirements.txt (for both day00 and 01)
 
-# 20692840
-# 20692840
 
 
 
@@ -51,6 +48,11 @@ EX00_TABLE := example
 EX01_DIR := ex01
 EX01_PY := customers_table.py
 EX01_TABLE := customers
+EX02_DIR := ex02
+EX02_PY := remove_duplicates.py
+EX03_DIR := ex03
+EX03_PY := fusion.py
+EX03_TABLE := item
 LOGS_TABLE := logs
 # Docker
 #  Infos
@@ -148,8 +150,9 @@ env:
 		echo "#  Directories" >> .env; \
 		echo "SUBJECT_DIR=$(SUBJECT_DIR)" >> .env; \
 		echo "SCRIPTS_DIR=$(SCRIPTS_DIR)" >> .env; \
+		echo "EX01_DIR=$(EX01_DIR)" >> .env; \
+		echo "EX02_DIR=$(EX02_DIR)" >> .env; \
 		echo "EX03_DIR=$(EX03_DIR)" >> .env; \
-		echo "EX04_DIR=$(EX04_DIR)" >> .env; \
 		echo "#" >> .env; \
 		echo "#" >> .env; \
 		echo "# Docker" >> .env; \
@@ -174,7 +177,12 @@ env:
 		echo "#  Files" >> .env; \
 		echo "EX00_PY=$(EX00_PY)" >> .env; \
 		echo "EX00_TABLE=$(EX00_TABLE)" >> .env; \
+		echo "EX01_PY=$(EX01_PY)" >> .env; \
 		echo "EX01_TABLE=$(EX01_TABLE)" >> .env; \
+		echo "EX02_PY=$(EX02_PY)" >> .env; \
+		echo "EX02_TABLE=$(EX02_TABLE)" >> .env; \
+		echo "EX03_PY=$(EX03_PY)" >> .env; \
+		echo "EX03_TABLE=$(EX03_TABLE)" >> .env; \
 		echo "INIT_PG_HBA_SH=init_pg_hba.sh" >> .env; \
 		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
 		echo "PG_HBA_CONF=pg_hba.conf" >> .env; \
@@ -194,6 +202,16 @@ ex00: up
 
 ex01: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX01_DIR)/$(EX01_PY)
+
+
+ex02: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX02_DIR)/$(EX02_PY)
+	printf "\nYou might want to run `make ex02-demo_test` to see \
+	how the SQL query to remove duplicates affects a table, \
+	on a 60 rows one, which contains many duplicates cases.\n"
+
+
+ex02-demo_test: up
 
 
 end: down fclean
