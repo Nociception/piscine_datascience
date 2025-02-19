@@ -1,6 +1,6 @@
 from sort_table_by_column import sort_table_by_column
+from drop_table import drop_table
 import os
-import psycopg
 
 
 # def column_exists(
@@ -151,7 +151,7 @@ def main() -> None:
         "event_time",
     )
 
-    # drop_table_query = f"DROP TABLE {table_name};"
+    drop_table(TABLE_NAME)
 
 
 
