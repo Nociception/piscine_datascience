@@ -1,7 +1,7 @@
 # TODO LIST
 
-# import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
 # analyze and vacuum item, or item_deduplicated
+# makefile rule clean every tests ex03
 
 
 # refactor the decorator
@@ -56,6 +56,7 @@ EX02_TESTS_PY := ex02_tests.py
 EX03_DIR := ex03
 EX03_PY := fusion.py
 EX03_TABLE := item
+EX03_TESTS := ex03_tests.py
 LOGS_TABLE := logs
 # Docker
 #  Infos
@@ -222,6 +223,10 @@ ex03: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX03_DIR)/$(EX03_PY)
 
 
+ex03-tests: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX03_TESTS)
+
+
 end: down fclean
 
 
@@ -316,3 +321,77 @@ wait_for_postgres:
 		$(DOCKER_EXEC) $(POSTGRES_CONTAINER) pg_isready -U $(POSTGRES_USER) -d $(POSTGRES_DB) -h $(POSTGRES_HOST) && break || sleep 2; \
 	done
 	@printf "\nPostgreSQL is ready!\n\n"
+
+
+# J'ai donc ma table item_deduplicated de prete.
+
+# La derniere etape consiste donc l'inclure dans customers.
+# Rappel, customers ressemble a ceci :
+#        event_time       |    event_type    | product_id | price |  user_id  |             user_session             
+# ------------------------+------------------+------------+-------+-----------+--------------------------------------
+#  2022-10-01 00:00:00+00 | cart             |    5773203 |  2.62 | 463240011 | 26dd6e6e-4dac-4778-8d2c-92e149dab885
+#  2022-10-01 00:00:03+00 | cart             |    5773353 |  2.62 | 463240011 | 26dd6e6e-4dac-4778-8d2c-92e149dab885
+#  2022-10-01 00:00:07+00 | cart             |    5881589 | 13.48 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:07+00 | cart             |    5723490 |  2.62 | 463240011 | 26dd6e6e-4dac-4778-8d2c-92e149dab885
+#  2022-10-01 00:00:15+00 | cart             |    5881449 |  0.56 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:16+00 | cart             |    5857269 |  2.62 | 430174032 | 73dea1e7-664e-43f4-8b30-d32b9d5af04f
+#  2022-10-01 00:00:19+00 | cart             |    5739055 |  4.75 | 377667011 | 81326ac6-daa4-4f0a-b488-fd0956a78733
+#  2022-10-01 00:00:24+00 | cart             |    5825598 |  0.56 | 467916806 | 2f5b5546-b8cb-9ee7-7ecd-84276f8ef486
+#  2022-10-01 00:00:25+00 | cart             |    5698989 |  1.27 | 385985999 | d30965e8-1101-44ab-b45d-cc1bb9fae694
+#  2022-10-01 00:00:26+00 | view             |    5875317 |  1.59 | 474232307 | 445f2b74-5e4c-427e-b7fa-6e0a28b156fe
+#  2022-10-01 00:00:28+00 | view             |    5692917 |  5.54 | 555446068 | 4257671a-efc8-4e58-96c2-3ab457916d78
+#  2022-10-01 00:00:28+00 | remove_from_cart |    5834172 |  0.95 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:30+00 | remove_from_cart |    5809103 |  0.60 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:30+00 | remove_from_cart |    5809103 |  0.60 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:32+00 | remove_from_cart |    5779403 | 12.22 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:33+00 | remove_from_cart |    5779403 | 12.22 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:34+00 | cart             |    5670337 |  2.38 | 546705258 | 3b5c65c0-bb1c-453b-b340-4ebf973a3136
+#  2022-10-01 00:00:42+00 | cart             |    5836522 |  0.40 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:43+00 | cart             |    5836522 |  0.40 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:00:48+00 | view             |    5819638 | 21.75 | 546705258 | 3b5c65c0-bb1c-453b-b340-4ebf973a3136
+#  2022-10-01 00:00:48+00 | cart             |    5859414 |  2.37 | 555442940 | 618f3d7d-2939-47ea-8f1d-07a4f97d0fe2
+#  2022-10-01 00:00:53+00 | view             |    5856191 | 24.44 | 507355498 | 944c7e9b-40bd-4112-a05b-81e73f37e0c0
+#  2022-10-01 00:00:55+00 | cart             |    5859413 |  2.37 | 555442940 | 618f3d7d-2939-47ea-8f1d-07a4f97d0fe2
+#  2022-10-01 00:00:56+00 | remove_from_cart |    5881589 | 13.48 | 429681830 | 49e8d843-adf3-428b-a2c3-fe8bc6a307c9
+#  2022-10-01 00:01:01+00 | cart             |    5723518 |  2.62 | 430174032 | c2bbd970-a5ad-42dd-a59b-f44276330b02
+# (25 rows)
+
+
+# Et item_deduplicated ressemble a ceci:
+# piscineds=# SELECT * FROM item_deduplicated LIMIT 25;
+#  product_id |     category_id     | category_code |   brand   
+# ------------+---------------------+---------------+-----------
+#     5823501 | 1487580004916134656 |               | 
+#     5838646 | 1487580011283087360 |               | pnb
+#     5870298 | 1487580013950664960 |               | estel
+#     5857192 | 1487580005880824576 |               | irisk
+#       72397 | 1487580011585077248 |               | skinlite
+#     5864081 | 1487580013950664960 |               | deoproce
+#     5878981 | 1487580013254410496 |               | 
+#     5828048 | 1487580009286598656 |               | solomeya
+#     5906112 | 1487580007675986944 |               | bpw.style
+#        3936 | 1487580005343953664 |               | entity
+#     5867117 | 1487580008758116352 |               | domix
+#     5900634 | 1487580007675986944 |               | freedecor
+#     5803508 | 1487580011652186112 |               | 
+#     5798928 | 1783999068909863680 |               | zinger
+#     5875286 | 1487580009605365760 |               | 
+#     5808018 | 2151191070984110848 |               | irisk
+#     5557788 | 1487580005528503040 |               | pnb
+#     5563776 | 1487580005595611904 |               | 
+#     5885387 | 1487580007675986944 |               | bpw.style
+#       33957 | 1487580005411062528 |               | cnd
+#     5823601 | 1487580004916134656 |               | 
+#     5887002 | 1487580006317032448 |               | 
+#     5895795 | 1487580012524601600 |               | 
+#     5898387 | 1783999072332415232 |               | ecolab
+#     5770046 | 1487580013841613056 |               | kapous
+# (25 rows)
+
+# (a noter que la premiere colonne est toujours renseignee, quand pour les trois autres, elles peuvent contenir quelque chose ou pas)
+
+# L'idee est donc de:
+# - ajouter trois colonnes a customers (on va faire un ALTER quelque chose je pense)
+
+# (on sait que chaque ligne de item_deduplicated est maintenant unique du point de vue de sa colonne product_id)
+# - puis faire en sorte que: pour chaque ligne de customers, les nouvelles colonnes soit remplies avec celles presentes dans item_deduplicated selon la ligne du product_id correspondant ; me suis-je bien fait comprendre ? Dans le doute, reformule ma requete, et illustre avec un exemple suffisamment complet.
