@@ -1,254 +1,63 @@
-import os
-import psycopg
-from pathlib import Path
+from import_csv_with_table_creation import import_csv_with_table_creation
+from QueryInfo import QueryInfo
+from logger import logger
+
+# def deduplicate_items(
+#     cursor: psycopg.Cursor,
+#     table_name: str
+# ) -> None:
+#     """Creates a table `{table_name}_deduplicated` with unique `product_id`."""
+
+#     try:
+#         print(f"Creating `{table_name}_deduplicated` table...")
+
+#         query = f"""
+#         CREATE TABLE IF NOT EXISTS {table_name}_deduplicated AS
+#         SELECT
+#             product_id,
+#             MAX(category_id) AS category_id,
+#             MAX(category_code) AS category_code,
+#             MAX(brand) AS brand
+#         FROM {table_name}
+#         GROUP BY product_id;
+#         """
+#         cursor.execute(query)
+#         print(f"Table `{table_name}_deduplicated` created successfully.")
+
+#         cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
+#         total_original = cursor.fetchone()[0]
+
+#         cursor.execute(f"SELECT COUNT(*) FROM {table_name}_deduplicated;")
+#         total_deduplicated = cursor.fetchone()[0]
+
+#         print(f"Rows before deduplication: {total_original}")
+#         print(f"Rows after deduplication: {total_deduplicated}")
+
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
 
 
-def get_env_variables() -> dict[str, str]:
-    """Returns the .env variables in a dictionary."""
-
-    env_variables = {
-        "postgres_user": os.getenv("POSTGRES_USER"),
-        "postgres_password": os.getenv("POSTGRES_PASSWORD"),
-        "postgres_db": os.getenv("POSTGRES_DB"),
-        "postgres_host": os.getenv("POSTGRES_HOST"),
-        "postgres_port": os.getenv("POSTGRES_PORT"),
-    }
-    assert all(env_variables.values()), (
-        f"ERROR: Missing one or more environment variables.\n"
-        f"env_variables:\n{env_variables}"
-    )
-
-    return env_variables
-
-
-def get_connection_cursor(
-    env_variables: dict[str, str],
-    autocommit: bool
-) -> tuple[psycopg.Connection, psycopg.Cursor]:
-    """
-    Provides a psycopg connection cursor,
-    according to the environment varibles provided.
-    Autocommit depending on the `autocommit` parameter.
-    """
-
-    connection = psycopg.connect(
-        user=env_variables["postgres_user"],
-        password=env_variables["postgres_password"],
-        dbname=env_variables["postgres_db"],
-        host=env_variables["postgres_host"],
-        port=env_variables["postgres_port"],
-        autocommit=autocommit
-    )
-    cursor = connection.cursor()
-    print(
-        f"Connected to the database"
-        f"`{env_variables['postgres_db']}` successfully."
-    )
-    
-    return connection, cursor
-
-
-def create_item_table(
-    cursor: psycopg.Cursor,
-    table_name: str
-) -> bool:
-    """
-    Creates the `item` table if does not exist.
-    Returns True if the table exists but is empty,
-    indicating taht data import is needed.
-    Returns False if the table already exists and is populated.
-    """
-
-    check_table_query = f"""
-    SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_name = '{table_name}'
-    );
-    """
-    cursor.execute(check_table_query)
-    table_exists = cursor.fetchone()[0]
-
-    if not table_exists:
-        create_table_query = f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            product_id INT,
-            category_id NUMERIC(20,0),
-            category_code VARCHAR(50),
-            brand VARCHAR(20)
-        );
-        """
-        cursor.execute(create_table_query)
-        print(f"Table `{table_name}` created.")
-
-    count_query = f"SELECT COUNT(*) FROM {table_name};"
-    cursor.execute(count_query)
-    row_count = cursor.fetchone()[0]
-
-    import_needed = not bool(row_count)
-    print(
-            f"Table `{table_name}` exists but is empty."
-            f" Import is needed."
-            if import_needed else
-            f"Table `{table_name}` exists and is already populated."
-    )
-    return import_needed
-
-
-def import_csv_into_table(
-    cursor: psycopg.Cursor,
-    csv_file_path: str,
-    table_name: str
-):
-    """Import data from a CSV file into the `customers` table."""
-
-    copy_query = f"""
-    COPY {table_name} (product_id, category_id,
-    category_code, brand)
-    FROM '{csv_file_path}'
-    DELIMITER ','
-    CSV HEADER;
-    """
-    cursor.execute(copy_query)
-    print(f"Data from {csv_file_path} imported into `{table_name}`.")
-
-
-def analyze_table(
-    cursor:psycopg.Cursor,
-    table_name: str
-) -> None:
-    """
-    Performs an ANALYZE on the table,
-    in order to get the right rows number on adminer.
-    """
-
-    analyze_query = f"ANALYZE {table_name};"
-    cursor.execute(analyze_query)
-
-
-def was_vacuumed(
-    cursor:psycopg.Cursor,
-    table_name: str
-) -> bool:
-    """
-    Checks if the table was vacuumed recently
-    by querying pg_stat_user_tables.
-
-    Returns a boolean depending of a recent vacuum:
-    True if a recent is logged
-    False otherwise
-
-    Raises a SystemError if the query does not produces any result.
-    """
-
-    check_recent_vacuum_query = """
-    SELECT last_vacuum IS NOT NULL
-    FROM pg_stat_user_tables
-    WHERE relname = %s;
-    """
-    cursor.execute(check_recent_vacuum_query, (table_name,))
-    # Linked parameters are prefered here, instead of a fstring,
-    # in order to prevent SQL injection.
-    # Only usable when parameters do not refer to table/column names.
-    
-    result = cursor.fetchone()
-    if result is not None:
-        result = result[0]
-        print(
-            f"Table {table_name} has been vacuumed recently. "
-            f"Vacuum skipped."
-            if result else
-            f"No recent vacuum."
-        )
-        return bool(result)
-
-    else:
-        # raise SystemError("SQL query did not produce any result.")
-        return False
-
-
-def vacuum_table(
-    cursor:psycopg.Cursor,
+from create_table import create_table
+from insert_rows import insert_rows
+def create_populate_test_table(
     table_name: str,
-    full: bool
+    headers: list[str],
+    column_types: list[str]
 ) -> None:
-    """
-    Performs an VACUUM (FULL depends on the `full` parameter)
-    on the table, in order to get the right rows number on adminer.
-    """
+    """DOCSTRING"""
 
-    if not was_vacuumed(cursor, table_name):
-        full = ' FULL ' if full else ' '
-        vacuum_query = f"VACUUM{full}{table_name};"
-        cursor.execute(vacuum_query)
-        print(f"VACUUM{full}command run on the table {table_name}.")
-    else:
-        print(
-            f"VACUUM skipped for table` "
-            f"{table_name}`: already vacuumed recently."
-        )
+    create_table(
+        table_name=table_name,
+        headers=headers,
+        column_types = column_types
+    )
 
-
-def deduplicate_items(
-    cursor: psycopg.Cursor,
-    table_name: str
-) -> None:
-    """Creates a table `{table_name}_deduplicated` with unique `product_id`."""
-
-    try:
-        print(f"Creating `{table_name}_deduplicated` table...")
-
-        query = f"""
-        CREATE TABLE IF NOT EXISTS {table_name}_deduplicated AS
-        SELECT
-            product_id,
-            MAX(category_id) AS category_id,
-            MAX(category_code) AS category_code,
-            MAX(brand) AS brand
-        FROM {table_name}
-        GROUP BY product_id;
-        """
-        cursor.execute(query)
-        print(f"Table `{table_name}_deduplicated` created successfully.")
-
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name};")
-        total_original = cursor.fetchone()[0]
-
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name}_deduplicated;")
-        total_deduplicated = cursor.fetchone()[0]
-
-        print(f"Rows before deduplication: {total_original}")
-        print(f"Rows after deduplication: {total_deduplicated}")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-
-def create_test_table(
-    cursor: psycopg.Cursor,
-    test_table_name: str
-) -> None:
-    """
-    Creates and populates a test table with XXXX tests cases:
-    """
-
-    table_creation_query = f"""
-        DROP TABLE IF EXISTS {test_table_name};
-
-        CREATE TABLE {test_table_name} (
-            product_id INT,
-            category_id NUMERIC(20,0),
-            category_code VARCHAR(50),
-            brand VARCHAR(20)
-        );
-    """
-    cursor.execute(table_creation_query)
-
-    sample_data = [
+    SAMPLE_DATA = [
         (5712790, None, None, None),
         (5712790, 2002, None, None),
         (5712790, None, "3,3", None),
         (5712790, None, None, "4,4"),  # 4
-        # (5712790, "2,2", "3,3", "4,4"),
+        # (5712790, 2002, "3,3", "4,4"),
 
         (5764655, 1487580005411062528, None, None),
         (5764655, 1487580005411062528, "6,3", None),
@@ -258,7 +67,7 @@ def create_test_table(
         (4958, None, "lol8,3", None),
         (4958, 9002, "lol8,3", None),
         (4958, None, "lol8,3", "10,4"),  # 10
-        # (4958, "9,2", "lol8,3", "10,4"),
+        # (4958, 9002, "lol8,3", "10,4"),
 
         (5848413, None, None, "freedecor"),
         (5848413, 12002, None, "freedecor"),
@@ -269,118 +78,196 @@ def create_test_table(
         (5629988, 1487580009311764480, None, "15,4"),  # 15
         # (5629988, 1487580009311764480, "14,3", "15,4"),
         
+        (5706778, 1487580005268456192, None, "beautix"),
+        # (5706778, 1487580005268456192, None, "beautix"),
         
-    #         5798924 | 1783999068867920640 |                         | zinger
-    # 5695827 | 1487580010821713920 |                         | ingarden
-    # 5590822 | 1487580006300255232 |                         | strong
-        
-        
-        
-        
+        (5838935, 1487580005713052416, None, "ingarden"),
+        (5838935, 1487580005713052416, None, "ingarden"),
+        # (5838935, 1487580005713052416, None, "ingarden"),
+
+        (5808300, 1487580005511725824, None, None),
+        # (5808300, 1487580005511725824, None, None),
+
+        (5687131, 1487580008187692032, None, None),
+        (5687131, 1487580008187692032, None, None),
+        # (5687131, 1487580008187692032, None, None),
+
+        (5746848, 2193074740686488320, "furniture.bathroom.bath", None),
+        (5746848, 2193074740686488320, "furniture.bathroom.bath", None),
+        # (5746848, 2193074740686488320, "furniture.bathroom.bath", None),
+
+        (5885594, 1487580006350586880, "appliances.environment.vacuum", "polarus"),
+        (5885594, 1487580006350586880, "appliances.environment.vacuum", "polarus"),
+        # (5885594, 1487580006350586880, "appliances.environment.vacuum", "polarus"),
+
+        (5692279, 1487580004857414400, None, "lianail"),
+        (5692279, 1487580004857414400, "accessories.bag", None),
+        # (5692279, 1487580004857414400, "accessories.bag", "lianail"),
     ]
 
-    cursor.executemany(
-        f"INSERT INTO {test_table_name} (product_id, category_id, category_code, brand) VALUES (%s, %s, %s, %s);",
-        sample_data
+    insert_rows(
+        table_name = table_name,
+        headers=headers,
+        rows=SAMPLE_DATA,
+        files_involved=None
+    )
+
+
+def create_expected_table(
+    table_name: str,
+    headers: list[str],
+    column_types: list[str]
+) -> None:
+    """DOCSTRING"""
+
+    create_table(
+        table_name=table_name,
+        headers=headers,
+        column_types=column_types
+    )
+
+    EXPECTED_ROWS = [
+        (5712790, 2002, "3,3", "4,4"),
+        (5764655, 1487580005411062528, "6,3", "7,4"),
+        (4958, 9002, "lol8,3", "10,4"),
+        (5848413, 12002, "13,3", "freedecor"),
+        (5629988, 1487580009311764480, "14,3", "15,4"),
+        (5706778, 1487580005268456192, None, "beautix"),
+        (5838935, 1487580005713052416, None, "ingarden"),
+        (5808300, 1487580005511725824, None, None),
+        (5687131, 1487580008187692032, None, None),
+        (5746848, 2193074740686488320, "furniture.bathroom.bath", None),
+        (5885594, 1487580006350586880, "appliances.environment.vacuum", "polarus"),
+        (5692279, 1487580004857414400, "accessories.bag", "lianail"),
+    ]
+
+    insert_rows(
+        table_name=table_name,
+        headers=headers,
+        rows=EXPECTED_ROWS
+    )
+
+
+from psycopg_connection_handler import psycopg_connection_handler
+from psycopg.sql import SQL, Identifier
+@psycopg_connection_handler()
+def deduplicate_items(table_name: str) -> QueryInfo:
+    """DOCSTRING SQLI"""
+
+    new_table_name = table_name + "_deduplicated"
+
+    deduplicate_query = SQL("""
+        CREATE TABLE IF NOT EXISTS {} AS
+        SELECT 
+            product_id,
+            MAX(category_id) FILTER (WHERE category_id IS NOT NULL) AS category_id,
+            MAX(category_code) FILTER (WHERE category_code IS NOT NULL) AS category_code,
+            MAX(brand) FILTER (WHERE brand IS NOT NULL) AS brand
+        FROM {}
+        GROUP BY product_id;
+    """).format(
+        Identifier(new_table_name),
+        Identifier(table_name)
+    )
+
+
+    return QueryInfo(
+        sql_query = deduplicate_query,
+        modification_type = "DEDUPLICATE",
+        table_name = table_name
+    )
+
+
+@psycopg_connection_handler()
+def compare_two_tables(
+    t1: str,
+    t2: str
+) -> QueryInfo:
+    """DOCSTRING sqli"""
+
+    comparison_query = SQL("""
+        (
+            SELECT * FROM test_deduplicated
+            EXCEPT ALL
+            SELECT * FROM expected_table
+        )
+        UNION ALL
+        (
+            SELECT * FROM expected_table
+            EXCEPT ALL
+            SELECT * FROM test_deduplicated
+        )
+    """).format(
+        table1=Identifier(t1),
+        table2=Identifier(t2)
+    )
+
+    return QueryInfo(
+        sql_query=comparison_query,
+        modification_type="COMPARISON",
+        table_name=t1
     )
 
 
 def main():
-    """Main function to load item data into a postgres table."""
+    """DOCSTRING get table_name with an env variable"""
 
-    CONTAINER_CSV_DIR = "/data/item"
-    TABLE_NAME = "item"
-    TEST_TABLE_NAME = "ex03_test"
-
-    try:
-        env_variables = get_env_variables()
-
-        try :
-            connection, cursor = get_connection_cursor(
-                env_variables,
-                autocommit=False
-            )
-
-            csv_dir = Path(CONTAINER_CSV_DIR).resolve()
-            assert csv_dir.exists(), (
-                f"ERROR: CSV directory not found at {csv_dir}"
-            )
-            print(f"CSV directory resolved to: {csv_dir}")
-
-            csv_files = [
-                file.name for file in csv_dir.iterdir()
-                if file.is_file() and file.suffix == ".csv"
-            ]
-            if not csv_files[0]:
-                print(f"No CSV files found in the CSV directory {csv_dir}.")
-                return
-            print(f"CSV files found: {csv_files[0]}")
-
-            import_needed = create_item_table(cursor, TABLE_NAME)
-
-            if import_needed:
-                import_csv_into_table(
-                    cursor,
-                    os.path.join(CONTAINER_CSV_DIR, csv_files[0]),
-                    TABLE_NAME
-                )
-
-                analyze_table(cursor,TABLE_NAME)
-
-                print(
-                    f"All CSV files have been imported into"
-                    f" the `{TABLE_NAME}` table.")
+    # TABLE_NAME = "item"
+    # CONTAINER_CSV_DIR = "/data/" + TABLE_NAME
+    # COLUMN_TYPES = [
+    #     "INT",
+    #     "BIGINT",
+    #     "VARCHAR(50)",
+    #     "VARCHAR(50)"
+    # ]
+    # import_csv_with_table_creation(
+    #     CONTAINER_CSV_DIR,
+    #     COLUMN_TYPES
+    # )
+    
+    # deduplicate_items(TABLE_NAME)
 
 
-            connection.commit()
 
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    TEST_TABLE_NAME = "test"
+    TEST_HEADERS = [
+        "product_id",
+        "category_id",
+        "category_code",
+        "brand",
+    ]
+    TEST_COLUMN_TYPES = [
+        "INT",
+        "NUMERIC(20, 0)",
+        "VARCHAR(50)",
+        "VARCHAR(20)",
+    ]
 
-        finally:
-            if 'connection' in locals() and connection:
-                connection.close()
-                print("Database connection closed.")
+    logger.critical("1")
 
-        try:
-            connection, cursor = get_connection_cursor(
-                env_variables,
-                autocommit=True
-            )
+    create_populate_test_table(
+        table_name=TEST_TABLE_NAME,
+        headers=TEST_HEADERS,
+        column_types=TEST_COLUMN_TYPES
+    )
 
-            vacuum_table(cursor, TABLE_NAME, full=True)
+    logger.critical("2")
 
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    deduplicate_items(TEST_TABLE_NAME)
 
-        finally:
-            if 'connection' in locals() and connection:
-                connection.close()
-                print("Database connection closed.")
+    logger.critical("3")
 
-        try:
-            connection, cursor = get_connection_cursor(
-                env_variables,
-                autocommit=True
-            )
 
-            target_table = "t"
+    EXPECTED_TABLE_NAME = "expected_table"
+    create_expected_table(
+        table_name=EXPECTED_TABLE_NAME,
+        headers=TEST_HEADERS,
+        column_types=TEST_COLUMN_TYPES
+    )
 
-            input_table_name = TEST_TABLE_NAME if target_table == "t" else TABLE_NAME
+    logger.critical("4")
 
-            create_test_table(cursor, TEST_TABLE_NAME)
-            deduplicate_items(cursor, input_table_name)
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-        finally:
-            if 'connection' in locals() and connection:
-                connection.close()
-                print("Database connection closed.")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    compare_two_tables(TEST_TABLE_NAME+"_deduplicated", EXPECTED_TABLE_NAME)
 
 
 if __name__ == "__main__":

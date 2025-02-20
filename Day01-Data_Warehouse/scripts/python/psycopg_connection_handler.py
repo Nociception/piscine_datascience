@@ -105,6 +105,16 @@ def psycopg_connection_handler():
                     logger.info("\nDetails from EXPLAIN ANALYZE:")
                     for row in explain_analyze_report:
                         logger.info(row[0])
+                elif query_info.modification_type == "COMPARISON":
+                    comparison_result = cursor.fetchall()
+                    if comparison_result:
+                        logger.info("\nDifferencies found between tables:")
+                        for row in comparison_result:
+                            logger.info(row)
+                    else:
+                        logger.info(
+                            "\nNo differencies found between the tables."
+                        )
 
                 final_count = 0
                 if query_info.modification_type not in ("CREATE", "DROP"):

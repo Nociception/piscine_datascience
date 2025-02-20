@@ -1,6 +1,10 @@
 # TODO LIST
 
 # import_csv_with_table_creation will be useful for ex03 (requires items table creation before)
+# analyze and vacuum item, or item_deduplicated
+
+
+# refactor the decorator
 # secure the password freely, as this day01 does not talk about it !!
 # remind to write sqli-proof queries
 # add the subject for each exercise
@@ -180,7 +184,7 @@ env:
 		echo "EX01_TABLE=$(EX01_TABLE)" >> .env; \
 		echo "EX02_PY=$(EX02_PY)" >> .env; \
 		echo "EX02_TABLE=$(EX02_TABLE)" >> .env; \
-		echo "EX03_PY=$(EX03_PY)" >> .env; \
+		echo "EX03_DIR=$(EX03_PY)" >> .env; \
 		echo "EX03_TABLE=$(EX03_TABLE)" >> .env; \
 		echo "INIT_PG_HBA_SH=init_pg_hba.sh" >> .env; \
 		echo "POSTGRES_DOCKERFILE=Dockerfile_postgres" >> .env; \
@@ -212,6 +216,10 @@ ex02: up
 
 ex02-demo_test: up
 	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(SCRIPTS_DIR)/$(EX02_TESTS_PY)
+
+
+ex03: up
+	$(DOCKER_PYTHON) /$(PYTHON_APP_DIR)/$(EX03_DIR)/$(EX03_PY)
 
 
 end: down fclean
