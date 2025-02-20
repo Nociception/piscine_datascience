@@ -204,7 +204,7 @@ def compare_two_tables(
 
     return QueryInfo(
         sql_query=comparison_query,
-        modification_type="COMPARISON",
+        modification_type=f"COMPARISON ({t1} and {t2})",
         table_name=t1
     )
 
