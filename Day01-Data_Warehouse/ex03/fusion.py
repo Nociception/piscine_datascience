@@ -209,6 +209,46 @@ def compare_two_tables(
     )
 
 
+def create_different_table(
+    table_name: str,
+    headers: list[str],
+    column_types: list[str]
+) -> None:
+    """DOCSTRING"""
+
+    create_table(
+        table_name=table_name,
+        headers=headers,
+        column_types=column_types
+    )
+
+    DIFFERENT_ROWS = [
+        (5712790, 2002, "3,3", "4,4"),
+        (5764655, 1487580005411062528, "6,3", "7,4"),
+        (4958, 9002, "lol8,3", "10,4"),
+        (5848413, 12002, "13,3", "freedecor"),
+        (5629988, 1487580009311764480, "14,3", "15,4"),
+        (5706778, 1487580005268456192, None, "beautix"),
+        (5838935, 1487580005713052416, None, "ingarden"),
+        (5808300, 1487580005511725824, None, None),
+        (5687131, 1487580008187692032, None, None),
+        (5687131, 1487580008187692031, None, None),  # different line
+        (5746848, 2193074740686488320, "furniture.bathroom.bath", None),
+        (5746847, 2193074740686488329, "furniture.bathroom.bath", None),  # different line
+        (5885594, 1487580006350586880, "appliances.environment.vacuum", "polarus"),
+        (5885593, 1487580006350586889, "appliances.environment.vacuun", "polarus"),  # different line
+        (5692279, 1487580004857414400, "accessories.bag", "lianail"),
+        (5892279, 1487580054857414400, "accessorie.bag", "lianaif"),  # different line
+    ]
+
+    insert_rows(
+        table_name=table_name,
+        headers=headers,
+        rows=DIFFERENT_ROWS
+    )
+
+
+
 def main():
     """DOCSTRING get table_name with an env variable"""
 
@@ -268,6 +308,16 @@ def main():
     logger.critical("4")
 
     compare_two_tables(TEST_TABLE_NAME+"_deduplicated", EXPECTED_TABLE_NAME)
+
+    DIFFERENT_TABLE_NAME = "different_table"
+    create_different_table(
+        table_name=DIFFERENT_TABLE_NAME,
+        headers=TEST_HEADERS,
+        column_types=TEST_COLUMN_TYPES
+    )
+
+    compare_two_tables(TEST_TABLE_NAME+"_deduplicated", DIFFERENT_TABLE_NAME)
+
 
 
 if __name__ == "__main__":
