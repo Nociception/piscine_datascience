@@ -187,15 +187,15 @@ def compare_two_tables(
 
     comparison_query = SQL("""
         (
-            SELECT * FROM test_deduplicated
+            SELECT * FROM {table1}
             EXCEPT ALL
-            SELECT * FROM expected_table
+            SELECT * FROM {table2}
         )
         UNION ALL
         (
-            SELECT * FROM expected_table
+            SELECT * FROM {table2}
             EXCEPT ALL
-            SELECT * FROM test_deduplicated
+            SELECT * FROM {table1}
         )
     """).format(
         table1=Identifier(t1),

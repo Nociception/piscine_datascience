@@ -20,9 +20,9 @@ def main():
         "row_diff"
     ]
     COLUMNS_TYPE = [
-        "VARCHAR (50)",
+        "VARCHAR (100)",
         "TIMESTAMP DEFAULT now()",
-        "VARCHAR (50)",
+        "VARCHAR (100)",
         "VARCHAR (300)",
         "BIGINT"
     ]

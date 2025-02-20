@@ -105,7 +105,7 @@ def psycopg_connection_handler():
                     logger.info("\nDetails from EXPLAIN ANALYZE:")
                     for row in explain_analyze_report:
                         logger.info(row[0])
-                elif query_info.modification_type == "COMPARISON":
+                elif query_info.modification_type.startswith("COMPARISON"):
                     comparison_result = cursor.fetchall()
                     if comparison_result:
                         logger.info("\nDifferencies found between tables:")
